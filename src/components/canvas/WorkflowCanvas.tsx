@@ -1,20 +1,37 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
   MiniMap,
   ReactFlowProvider,
+  useReactFlow,
   applyNodeChanges,
   applyEdgeChanges,
   type Node,
-  type Edge,
   type NodeChange,
   type EdgeChange,
 } from "reactflow";
-import { NODE_COLORS, type NodeType } from "@/types/workflow";
+import { NODE_COLORS, type NodeType, type NodeData, type WorkflowNode } from "@/types/workflow";
+import { useWorkflowStore } from "@/store/workflow";
+import TextNode from "@/components/nodes/TextNode";
+
+// defined outside Flow so React Flow never sees a new object reference on re-render
+const nodeTypes = {
+  text: TextNode,
+};
+
+// default data for each node type when first dropped onto the canvas
+const DEFAULT_NODE_DATA: Record<NodeType, NodeData> = {
+  text: { type: "text", label: "Text", text: "" },
+  llm: { type: "llm", label: "LLM", model: "gemini-1.5-flash", systemPrompt: "", result: null, streaming: false, error: null },
+  "upload-image": { type: "upload-image", label: "Upload Image", imageUrl: null, fileName: null },
+  "upload-video": { type: "upload-video", label: "Upload Video", videoUrl: null, fileName: null },
+  "crop-image": { type: "crop-image", label: "Crop Image", xPercent: 0, yPercent: 0, widthPercent: 100, heightPercent: 100, outputUrl: null, error: null },
+  "extract-frame": { type: "extract-frame", label: "Extract Frame", timestamp: "0", outputUrl: null, error: null },
+};
 
 function getNodeColor(node: Node): string {
   const type = node.type as NodeType | undefined;
@@ -23,19 +40,51 @@ function getNodeColor(node: Node): string {
 }
 
 function Flow() {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const nodes = useWorkflowStore((s) => s.nodes);
+  const edges = useWorkflowStore((s) => s.edges);
+  const setNodes = useWorkflowStore((s) => s.setNodes);
+  const setEdges = useWorkflowStore((s) => s.setEdges);
+  const addNode = useWorkflowStore((s) => s.addNode);
+  const { screenToFlowPosition } = useReactFlow();
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
-      setNodes((prev) => applyNodeChanges(changes, prev)),
-    []
+      setNodes(applyNodeChanges(changes, nodes)),
+    [setNodes, nodes]
   );
 
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) =>
-      setEdges((prev) => applyEdgeChanges(changes, prev)),
-    []
+      setEdges(applyEdgeChanges(changes, edges)),
+    [setEdges, edges]
+  );
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      const nodeType = event.dataTransfer.getData("nodeType") as NodeType;
+      if (!nodeType || !(nodeType in DEFAULT_NODE_DATA)) return;
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const newNode: WorkflowNode = {
+        id: crypto.randomUUID(),
+        type: nodeType,
+        position,
+        data: DEFAULT_NODE_DATA[nodeType],
+      };
+
+      addNode(newNode);
+    },
+    [addNode, screenToFlowPosition]
   );
 
   return (
@@ -45,6 +94,9 @@ function Flow() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        nodeTypes={nodeTypes}
         deleteKeyCode={["Delete", "Backspace"]}
         multiSelectionKeyCode="Shift"
         fitView={false}
