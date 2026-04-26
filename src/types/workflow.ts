@@ -1,14 +1,10 @@
 import type { Node, Edge } from "reactflow";
 
-// ---------------------------------------------------------------------------
 // Handle types
-// ---------------------------------------------------------------------------
 
 export type HandleType = "text" | "image" | "video";
 
-// ---------------------------------------------------------------------------
 // Node types
-// ---------------------------------------------------------------------------
 
 export type NodeType =
   | "text"
@@ -18,9 +14,7 @@ export type NodeType =
   | "crop-image"
   | "extract-frame";
 
-// ---------------------------------------------------------------------------
 // Per-node data shapes
-// ---------------------------------------------------------------------------
 
 export interface TextNodeData {
   type: "text";
@@ -79,23 +73,17 @@ export type NodeData =
   | CropImageNodeData
   | ExtractFrameNodeData;
 
-// ---------------------------------------------------------------------------
 // Workflow graph types (React Flow wrappers)
-// ---------------------------------------------------------------------------
 
 export type WorkflowNode = Node<NodeData>;
 export type WorkflowEdge = Edge;
 
-// ---------------------------------------------------------------------------
 // Run status and scope (mirrors Prisma enums)
-// ---------------------------------------------------------------------------
 
 export type RunStatus = "success" | "failed" | "partial" | "running";
 export type RunScope = "full" | "partial" | "single";
 
-// ---------------------------------------------------------------------------
 // Execution records (DB row shapes returned from API)
-// ---------------------------------------------------------------------------
 
 export interface NodeExecutionRecord {
   id: string;
@@ -121,9 +109,7 @@ export interface WorkflowRunRecord {
   executions: NodeExecutionRecord[];
 }
 
-// ---------------------------------------------------------------------------
 // Execution engine types
-// ---------------------------------------------------------------------------
 
 export interface ExecutionInput {
   nodeId: string;
@@ -145,18 +131,14 @@ export interface RunOptions {
   selectedNodeIds?: string[];
 }
 
-// ---------------------------------------------------------------------------
 // API response shape
-// ---------------------------------------------------------------------------
 
 export interface ApiError {
   error: string;
   code: string;
 }
 
-// ---------------------------------------------------------------------------
 // Workflow DB record shape (for save/load)
-// ---------------------------------------------------------------------------
 
 export interface WorkflowRecord {
   id: string;
@@ -168,9 +150,7 @@ export interface WorkflowRecord {
   updatedAt: string;
 }
 
-// ---------------------------------------------------------------------------
 // Node color map for the minimap
-// ---------------------------------------------------------------------------
 
 export const NODE_COLORS: Record<NodeType, string> = {
   text: "#3b82f6",
@@ -181,9 +161,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   "extract-frame": "#f97316",
 };
 
-// ---------------------------------------------------------------------------
 // Handle type map per node type (output side)
-// ---------------------------------------------------------------------------
 
 export const NODE_OUTPUT_HANDLE_TYPE: Partial<Record<NodeType, HandleType>> = {
   text: "text",
@@ -193,9 +171,7 @@ export const NODE_OUTPUT_HANDLE_TYPE: Partial<Record<NodeType, HandleType>> = {
   "extract-frame": "image",
 };
 
-// ---------------------------------------------------------------------------
 // LLM model options
-// ---------------------------------------------------------------------------
 
 export const GEMINI_MODELS = [
   { id: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
