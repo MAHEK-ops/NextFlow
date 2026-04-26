@@ -165,6 +165,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
 
 export const NODE_OUTPUT_HANDLE_TYPE: Partial<Record<NodeType, HandleType>> = {
   text: "text",
+  llm: "text",
   "upload-image": "image",
   "upload-video": "video",
   "crop-image": "image",

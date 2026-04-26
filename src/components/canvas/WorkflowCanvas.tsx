@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -13,9 +13,13 @@ import ReactFlow, {
   type Node,
   type NodeChange,
   type EdgeChange,
+  type Connection,
+  type OnConnectStartParams,
 } from "reactflow";
-import { NODE_COLORS, type NodeType, type NodeData, type WorkflowNode } from "@/types/workflow";
+import { NODE_COLORS, type NodeType, type NodeData, type WorkflowNode, type WorkflowEdge } from "@/types/workflow";
 import { useWorkflowStore } from "@/store/workflow";
+import { toast } from "sonner";
+import { isValidConnection as checkConnection, getInvalidConnectionReason } from "@/lib/handle-validator";
 import TextNode from "@/components/nodes/TextNode";
 import UploadImageNode from "@/components/nodes/UploadImageNode";
 import UploadVideoNode from "@/components/nodes/UploadVideoNode";
@@ -55,7 +59,13 @@ function Flow() {
   const setNodes = useWorkflowStore((s) => s.setNodes);
   const setEdges = useWorkflowStore((s) => s.setEdges);
   const addNode = useWorkflowStore((s) => s.addNode);
+  const addEdgeToStore = useWorkflowStore((s) => s.addEdge);
   const { screenToFlowPosition } = useReactFlow();
+
+  const connectingNodeRef = useRef<{ nodeId: string | null; handleId: string | null }>({
+    nodeId: null,
+    handleId: null,
+  });
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
@@ -97,6 +107,61 @@ function Flow() {
     [addNode, screenToFlowPosition]
   );
 
+  const validateConnection = useCallback(
+    (connection: Connection) => checkConnection(connection, nodes),
+    [nodes]
+  );
+
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      const edge = {
+        ...connection,
+        id: crypto.randomUUID(),
+        animated: true,
+        style: { stroke: "#7c3aed", strokeWidth: 2 },
+        type: "smoothstep",
+      };
+      addEdgeToStore(edge as WorkflowEdge);
+    },
+    [addEdgeToStore]
+  );
+
+  const onConnectStart = useCallback(
+    (_: React.MouseEvent | React.TouchEvent, params: OnConnectStartParams) => {
+      connectingNodeRef.current = { nodeId: params.nodeId, handleId: params.handleId };
+    },
+    []
+  );
+
+  const onConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      const el = event.target as Element | null;
+      if (!el) return;
+      const handleEl = el.closest<HTMLElement>(".react-flow__handle");
+      if (!handleEl) return;
+
+      const targetHandleId = handleEl.getAttribute("data-handleid");
+      const nodeEl = handleEl.closest<HTMLElement>("[data-id]");
+      const targetNodeId = nodeEl?.getAttribute("data-id") ?? null;
+      if (!targetNodeId || !targetHandleId) return;
+
+      const { nodeId: sourceNodeId, handleId: sourceHandleId } = connectingNodeRef.current;
+      if (!sourceNodeId || sourceNodeId === targetNodeId) return;
+
+      const connection: Connection = {
+        source: sourceNodeId,
+        sourceHandle: sourceHandleId,
+        target: targetNodeId,
+        targetHandle: targetHandleId,
+      };
+
+      if (!checkConnection(connection, nodes)) {
+        toast.error(getInvalidConnectionReason(connection, nodes));
+      }
+    },
+    [nodes]
+  );
+
   return (
     <div className="relative w-full h-full">
       <ReactFlow
@@ -106,6 +171,10 @@ function Flow() {
         onEdgesChange={onEdgesChange}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        isValidConnection={validateConnection}
         nodeTypes={nodeTypes}
         deleteKeyCode={["Delete", "Backspace"]}
         multiSelectionKeyCode="Shift"
