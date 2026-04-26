@@ -17,10 +17,12 @@ import ReactFlow, {
 import { NODE_COLORS, type NodeType, type NodeData, type WorkflowNode } from "@/types/workflow";
 import { useWorkflowStore } from "@/store/workflow";
 import TextNode from "@/components/nodes/TextNode";
+import UploadImageNode from "@/components/nodes/UploadImageNode";
 
 // defined outside Flow so React Flow never sees a new object reference on re-render
 const nodeTypes = {
   text: TextNode,
+  "upload-image": UploadImageNode,
 };
 
 // default data for each node type when first dropped onto the canvas
