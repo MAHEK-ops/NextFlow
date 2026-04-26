@@ -20,6 +20,7 @@ import TextNode from "@/components/nodes/TextNode";
 import UploadImageNode from "@/components/nodes/UploadImageNode";
 import UploadVideoNode from "@/components/nodes/UploadVideoNode";
 import LLMNode from "@/components/nodes/LLMNode";
+import CropImageNode from "@/components/nodes/CropImageNode";
 
 // defined outside Flow so React Flow never sees a new object reference on re-render
 const nodeTypes = {
@@ -27,6 +28,7 @@ const nodeTypes = {
   "upload-image": UploadImageNode,
   "upload-video": UploadVideoNode,
   llm: LLMNode,
+  "crop-image": CropImageNode,
 };
 
 // default data for each node type when first dropped onto the canvas
