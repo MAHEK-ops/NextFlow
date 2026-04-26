@@ -16,6 +16,7 @@
     "@uppy/transloadit": "^3",
     "clsx": "^2",
     "date-fns": "^3",
+    "immer": "^11.1.4",
     "lucide-react": "^0.446.0",
     "next": "14.2.35",
     "react": "^18",
