@@ -1,3 +1,5 @@
+@import 'reactflow/dist/style.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -106,28 +108,18 @@
 }
 
 .react-flow__controls {
-  background: #111111;
-  border: 1px solid #272727;
-  border-radius: 8px;
+  background: transparent;
+  border: none;
   box-shadow: none;
 }
 
 .react-flow__controls-button {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #272727;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
   color: #a3a3a3;
+  fill: #a3a3a3;
 }
 
 .react-flow__controls-button:hover {
-  background: #1a1a1a;
-  color: #fafafa;
-}
-
-.react-flow__controls-button:last-child {
-  border-bottom: none;
-}
-
-.react-flow__controls-button svg {
-  fill: currentColor;
+  background: #252525;
 }
