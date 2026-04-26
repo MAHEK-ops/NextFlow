@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0a0a0a;
+    color: #fafafa;
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  ::selection {
+    background-color: rgba(124, 58, 237, 0.3);
+    color: #fafafa;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #111111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #272727;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3a3a;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* React Flow overrides */
+.react-flow__background {
+  background-color: #0a0a0a;
+}
+
+.react-flow__edge-path {
+  stroke: #7c3aed;
+  stroke-width: 2;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #272727;
+  background: #1a1a1a;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.react-flow__handle:hover,
+.react-flow__handle.connectable:hover {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.react-flow__handle-connecting {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.react-flow__handle-valid {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+.react-flow__minimap {
+  background: #111111;
+  border: 1px solid #272727;
+  border-radius: 8px;
+}
+
+.react-flow__controls {
+  background: #111111;
+  border: 1px solid #272727;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.react-flow__controls-button {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #272727;
+  color: #a3a3a3;
+}
+
+.react-flow__controls-button:hover {
+  background: #1a1a1a;
+  color: #fafafa;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
