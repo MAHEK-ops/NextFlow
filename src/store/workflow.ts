@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { current } from "immer";
 import type { WorkflowNode, WorkflowEdge, NodeData, RunStatus } from "@/types/workflow";
+
+interface UndoSnapshot {
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+}
+
+const MAX_UNDO = 50;
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -10,6 +18,8 @@ interface WorkflowState {
   runStatus: RunStatus | null;
   executingNodeIds: Set<string>;
   failedNodeIds: Set<string>;
+  undoStack: UndoSnapshot[];
+  redoStack: UndoSnapshot[];
 }
 
 interface WorkflowActions {
@@ -32,6 +42,8 @@ interface WorkflowActions {
   resetExecutionState: () => void;
 
   clearCanvas: () => void;
+  undo: () => void;
+  redo: () => void;
 }
 
 type WorkflowStore = WorkflowState & WorkflowActions;
@@ -44,7 +56,13 @@ const initialState: WorkflowState = {
   runStatus: null,
   executingNodeIds: new Set(),
   failedNodeIds: new Set(),
+  undoStack: [],
+  redoStack: [],
 };
+
+function snapshot(nodes: WorkflowNode[], edges: WorkflowEdge[]): UndoSnapshot {
+  return { nodes, edges };
+}
 
 export const useWorkflowStore = create<WorkflowStore>()(
   immer((set) => ({
@@ -52,12 +70,19 @@ export const useWorkflowStore = create<WorkflowStore>()(
 
     setNodes: (nodes) =>
       set((state) => {
-        state.nodes = nodes;
+        state.nodes = nodes as typeof state.nodes;
       }),
 
     addNode: (node) =>
       set((state) => {
-        state.nodes.push(node);
+        const snap = snapshot(
+          current(state.nodes) as WorkflowNode[],
+          current(state.edges) as WorkflowEdge[]
+        );
+        if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
+        state.undoStack.push(snap);
+        state.redoStack = [];
+        state.nodes.push(node as typeof state.nodes[0]);
       }),
 
     updateNodeData: (nodeId, data) =>
@@ -70,6 +95,13 @@ export const useWorkflowStore = create<WorkflowStore>()(
 
     removeNode: (nodeId) =>
       set((state) => {
+        const snap = snapshot(
+          current(state.nodes) as WorkflowNode[],
+          current(state.edges) as WorkflowEdge[]
+        );
+        if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
+        state.undoStack.push(snap);
+        state.redoStack = [];
         state.nodes = state.nodes.filter((n) => n.id !== nodeId);
         state.edges = state.edges.filter(
           (e) => e.source !== nodeId && e.target !== nodeId
@@ -78,16 +110,30 @@ export const useWorkflowStore = create<WorkflowStore>()(
 
     setEdges: (edges) =>
       set((state) => {
-        state.edges = edges;
+        state.edges = edges as typeof state.edges;
       }),
 
     addEdge: (edge) =>
       set((state) => {
-        state.edges.push(edge);
+        const snap = snapshot(
+          current(state.nodes) as WorkflowNode[],
+          current(state.edges) as WorkflowEdge[]
+        );
+        if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
+        state.undoStack.push(snap);
+        state.redoStack = [];
+        state.edges.push(edge as typeof state.edges[0]);
       }),
 
     removeEdge: (edgeId) =>
       set((state) => {
+        const snap = snapshot(
+          current(state.nodes) as WorkflowNode[],
+          current(state.edges) as WorkflowEdge[]
+        );
+        if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
+        state.undoStack.push(snap);
+        state.redoStack = [];
         state.edges = state.edges.filter((e) => e.id !== edgeId);
       }),
 
@@ -105,11 +151,13 @@ export const useWorkflowStore = create<WorkflowStore>()(
       set((state) => {
         state.workflowId = id;
         state.workflowName = name;
-        state.nodes = nodes;
-        state.edges = edges;
+        state.nodes = nodes as typeof state.nodes;
+        state.edges = edges as typeof state.edges;
         state.runStatus = null;
         state.executingNodeIds = new Set();
         state.failedNodeIds = new Set();
+        state.undoStack = [];
+        state.redoStack = [];
       }),
 
     setRunStatus: (status) =>
@@ -136,8 +184,43 @@ export const useWorkflowStore = create<WorkflowStore>()(
 
     clearCanvas: () =>
       set((state) => {
+        const snap = snapshot(
+          current(state.nodes) as WorkflowNode[],
+          current(state.edges) as WorkflowEdge[]
+        );
+        if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
+        state.undoStack.push(snap);
+        state.redoStack = [];
         state.nodes = [];
         state.edges = [];
+      }),
+
+    undo: () =>
+      set((state) => {
+        const snap = state.undoStack.pop();
+        if (!snap) return;
+        state.redoStack.push(
+          snapshot(
+            current(state.nodes) as WorkflowNode[],
+            current(state.edges) as WorkflowEdge[]
+          )
+        );
+        state.nodes = snap.nodes as typeof state.nodes;
+        state.edges = snap.edges as typeof state.edges;
+      }),
+
+    redo: () =>
+      set((state) => {
+        const snap = state.redoStack.pop();
+        if (!snap) return;
+        state.undoStack.push(
+          snapshot(
+            current(state.nodes) as WorkflowNode[],
+            current(state.edges) as WorkflowEdge[]
+          )
+        );
+        state.nodes = snap.nodes as typeof state.nodes;
+        state.edges = snap.edges as typeof state.edges;
       }),
   }))
 );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -15,6 +15,7 @@ import ReactFlow, {
   type Connection,
   type OnConnectStartParams,
 } from "reactflow";
+import NodeContextMenu from "./NodeContextMenu";
 import { NODE_COLORS, type NodeType, type NodeData, type WorkflowNode, type WorkflowEdge } from "@/types/workflow";
 import { useWorkflowStore } from "@/store/workflow";
 import { toast } from "sonner";
@@ -61,6 +62,14 @@ function Flow() {
   const addNode = useWorkflowStore((s) => s.addNode);
   const addEdgeToStore = useWorkflowStore((s) => s.addEdge);
   const { screenToFlowPosition } = useReactFlow();
+
+  const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
+  const closeContextMenu = useCallback(() => setContextMenu(null), []);
+
+  const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
+    event.preventDefault();
+    setContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY });
+  }, []);
 
   const connectingNodeRef = useRef<{ nodeId: string | null; handleId: string | null }>({
     nodeId: null,
@@ -179,6 +188,7 @@ function Flow() {
         onConnect={onConnect}
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
+        onNodeContextMenu={onNodeContextMenu}
         isValidConnection={validateConnection}
         nodeTypes={nodeTypes}
         deleteKeyCode={["Delete", "Backspace"]}
@@ -211,11 +221,23 @@ function Flow() {
       </ReactFlow>
 
       {nodes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-2">
           <p className="text-sm text-[#525252] select-none">
             Drag a node from the left panel to get started
           </p>
+          <p className="text-xs text-[#3a3a3a] select-none">
+            Press Cmd+K to open the command palette
+          </p>
         </div>
+      )}
+
+      {contextMenu && (
+        <NodeContextMenu
+          nodeId={contextMenu.nodeId}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={closeContextMenu}
+        />
       )}
     </div>
   );

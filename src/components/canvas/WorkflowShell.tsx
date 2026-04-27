@@ -27,6 +27,8 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   const setRunStatus = useWorkflowStore((s) => s.setRunStatus);
   const setExecutingNodeIds = useWorkflowStore((s) => s.setExecutingNodeIds);
   const loadWorkflow = useWorkflowStore((s) => s.loadWorkflow);
+  const undo = useWorkflowStore((s) => s.undo);
+  const redo = useWorkflowStore((s) => s.redo);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -82,8 +84,9 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
     scheduleSave();
   }, [nodes, edges, scheduleSave]);
 
-  async function handleRun() {
+  const handleRun = useCallback(async () => {
     if (running || nodes.length === 0) return;
+    toast.info("Running workflow...");
     setRunning(true);
     setExecutingNodeIds(new Set(nodes.map((n) => n.id)));
 
@@ -102,7 +105,12 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
       };
 
       if (!res.ok) {
-        toast.error("Workflow failed: " + (data.error ?? "Unknown error"));
+        const errorMsg = data.error ?? "Unknown error";
+        if (errorMsg.toLowerCase().includes("cycle")) {
+          toast.error("Workflow contains a cycle");
+        } else {
+          toast.error("Workflow failed: " + errorMsg);
+        }
         setRunStatus("failed");
       } else {
         toast.success("Workflow completed");
@@ -116,7 +124,26 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
       setRunning(false);
       setExecutingNodeIds(new Set());
     }
-  }
+  }, [running, nodes, edges, workflowId, setRunStatus, setExecutingNodeIds]);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        void handleRun();
+      }
+      if (e.key === "z" && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if (e.key === "z" && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [handleRun, undo, redo]);
 
   return (
     <ReactFlowProvider>

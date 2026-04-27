@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Command } from "cmdk";
 import { useReactFlow } from "reactflow";
 import { Play, Trash2, Type, Cpu, ImagePlus, VideoIcon, Crop, Film, type LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import { useWorkflowStore } from "@/store/workflow";
 import { NODE_COLORS, type NodeType, type NodeData } from "@/types/workflow";
 
@@ -76,6 +77,7 @@ export default function CommandPalette({ onRun }: CommandPaletteProps) {
 
   function handleClear() {
     clearCanvas();
+    toast.success("Canvas cleared");
     close();
   }
 
