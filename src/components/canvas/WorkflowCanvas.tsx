@@ -6,7 +6,6 @@ import ReactFlow, {
   BackgroundVariant,
   Controls,
   MiniMap,
-  ReactFlowProvider,
   useReactFlow,
   applyNodeChanges,
   applyEdgeChanges,
@@ -224,10 +223,8 @@ function Flow() {
 
 export default function WorkflowCanvas() {
   return (
-    <ReactFlowProvider>
-      <main className="relative flex-1 h-full bg-[#0a0a0a]">
-        <Flow />
-      </main>
-    </ReactFlowProvider>
+    <main className="relative flex-1 h-full bg-[#0a0a0a]">
+      <Flow />
+    </main>
   );
 }

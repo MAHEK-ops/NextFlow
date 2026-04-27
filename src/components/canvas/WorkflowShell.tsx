@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ReactFlowProvider } from "reactflow";
 import { useWorkflowStore } from "@/store/workflow";
 import type { RunStatus, WorkflowNode, WorkflowEdge } from "@/types/workflow";
 import NodeSidebar from "./NodeSidebar";
 import WorkflowCanvas from "./WorkflowCanvas";
 import HistorySidebar from "./HistorySidebar";
+import CommandPalette from "./CommandPalette";
 
 interface WorkflowShellProps {
   workflowId: string;
@@ -117,38 +119,42 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col">
-      <header className="h-12 flex-none flex items-center justify-between px-4 bg-[#111111] border-b border-[#1f1f1f]">
-        <div className="flex items-center gap-3 min-w-0">
-          <input
-            type="text"
-            defaultValue={initialName}
-            placeholder="Untitled Workflow"
-            className="bg-transparent text-white text-sm font-medium placeholder:text-[#525252] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] rounded px-1 py-0.5 w-48 min-w-0"
-          />
-          {saveState === "saving" && (
-            <span className="text-xs text-[#525252] flex-none">Saving...</span>
-          )}
-          {saveState === "saved" && (
-            <span className="text-xs text-[#525252] flex-none">Saved</span>
-          )}
-        </div>
-        <button
-          type="button"
-          disabled={running}
-          onClick={handleRun}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6d28d9] hover:bg-[#7c3aed] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
-        >
-          {running && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-          {running ? "Running..." : "Run"}
-        </button>
-      </header>
+    <ReactFlowProvider>
+      <div className="h-screen w-screen overflow-hidden flex flex-col">
+        <header className="h-12 flex-none flex items-center justify-between px-4 bg-[#111111] border-b border-[#1f1f1f]">
+          <div className="flex items-center gap-3 min-w-0">
+            <input
+              type="text"
+              defaultValue={initialName}
+              placeholder="Untitled Workflow"
+              className="bg-transparent text-white text-sm font-medium placeholder:text-[#525252] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] rounded px-1 py-0.5 w-48 min-w-0"
+            />
+            {saveState === "saving" && (
+              <span className="text-xs text-[#525252] flex-none">Saving...</span>
+            )}
+            {saveState === "saved" && (
+              <span className="text-xs text-[#525252] flex-none">Saved</span>
+            )}
+          </div>
+          <button
+            type="button"
+            disabled={running}
+            onClick={handleRun}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6d28d9] hover:bg-[#7c3aed] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
+          >
+            {running && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            {running ? "Running..." : "Run"}
+          </button>
+        </header>
 
-      <div className="flex-1 flex overflow-hidden">
-        <NodeSidebar />
-        <WorkflowCanvas />
-        <HistorySidebar workflowId={workflowId} />
+        <div className="flex-1 flex overflow-hidden">
+          <NodeSidebar />
+          <WorkflowCanvas />
+          <HistorySidebar workflowId={workflowId} />
+        </div>
+
+        <CommandPalette workflowId={workflowId} onRun={handleRun} />
       </div>
-    </div>
+    </ReactFlowProvider>
   );
 }
