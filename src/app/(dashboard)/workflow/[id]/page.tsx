@@ -22,5 +22,5 @@ export default async function WorkflowPage({ params }: WorkflowPageProps) {
     notFound();
   }
 
-  return <WorkflowShell initialName={workflow.name} />;
+  return <WorkflowShell workflowId={workflow.id} initialName={workflow.name} />;
 }

@@ -91,9 +91,9 @@ export async function runWorkflow(
   edges: WorkflowEdge[],
   options: RunOptions,
   callbacks: {
-    onNodeStart: (nodeId: string) => void;
-    onNodeComplete: (nodeId: string, outputs: Record<string, unknown>) => void;
-    onNodeError: (nodeId: string, error: string) => void;
+    onNodeStart: (nodeId: string) => void | Promise<void>;
+    onNodeComplete: (nodeId: string, outputs: Record<string, unknown>) => void | Promise<void>;
+    onNodeError: (nodeId: string, error: string) => void | Promise<void>;
     executeNode: (node: WorkflowNode, inputs: Record<string, unknown>) => Promise<Record<string, unknown>>;
   }
 ): Promise<{ status: RunStatus; duration: number }> {
@@ -121,16 +121,16 @@ export async function runWorkflow(
 
     await Promise.all(
       layerNodes.map(async (node) => {
-        callbacks.onNodeStart(node.id);
+        await callbacks.onNodeStart(node.id);
         try {
           const inputs = resolveNodeInputs(node, edges, outputs);
           const nodeOutputs = await callbacks.executeNode(node, inputs);
           outputs.set(node.id, nodeOutputs);
-          callbacks.onNodeComplete(node.id, nodeOutputs);
+          await callbacks.onNodeComplete(node.id, nodeOutputs);
           successCount++;
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
-          callbacks.onNodeError(node.id, message);
+          await callbacks.onNodeError(node.id, message);
           failCount++;
         }
       })

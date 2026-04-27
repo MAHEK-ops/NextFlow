@@ -123,3 +123,14 @@
 .react-flow__controls-button:hover {
   background: #252525;
 }
+
+.node-executing {
+  box-shadow: 0 0 0 2px #7c3aed, 0 0 20px rgba(124, 58, 237, 0.4);
+  border-radius: 8px;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 2px #7c3aed, 0 0 20px rgba(124, 58, 237, 0.4); }
+  50% { box-shadow: 0 0 0 2px #7c3aed, 0 0 35px rgba(124, 58, 237, 0.7); }
+}

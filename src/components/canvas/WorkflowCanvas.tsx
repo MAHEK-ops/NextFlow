@@ -56,6 +56,7 @@ function getNodeColor(node: Node): string {
 function Flow() {
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
+  const executingNodeIds = useWorkflowStore((s) => s.executingNodeIds);
   const setNodes = useWorkflowStore((s) => s.setNodes);
   const setEdges = useWorkflowStore((s) => s.setEdges);
   const addNode = useWorkflowStore((s) => s.addNode);
@@ -162,10 +163,15 @@ function Flow() {
     [nodes]
   );
 
+  const styledNodes = nodes.map((node) => ({
+    ...node,
+    className: executingNodeIds.has(node.id) ? "node-executing" : "",
+  }));
+
   return (
     <div className="relative w-full h-full">
       <ReactFlow
-        nodes={nodes}
+        nodes={styledNodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
