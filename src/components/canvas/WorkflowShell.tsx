@@ -86,7 +86,7 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
       <div className="flex-1 flex overflow-hidden">
         <NodeSidebar />
         <WorkflowCanvas />
-        <HistorySidebar />
+        <HistorySidebar workflowId={workflowId} />
       </div>
     </div>
   );
