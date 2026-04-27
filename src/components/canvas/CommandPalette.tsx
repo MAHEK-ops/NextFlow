@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Command } from "cmdk";
 import { useReactFlow } from "reactflow";
-import { Play, Trash2, Type, Cpu, ImagePlus, VideoIcon, Crop, Film, type LucideIcon } from "lucide-react";
+import { Play, Trash2, Download, Upload, Type, Cpu, ImagePlus, VideoIcon, Crop, Film, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkflowStore } from "@/store/workflow";
 import { NODE_COLORS, type NodeType, type NodeData } from "@/types/workflow";
@@ -11,6 +11,8 @@ import { NODE_COLORS, type NodeType, type NodeData } from "@/types/workflow";
 interface CommandPaletteProps {
   workflowId: string;
   onRun: () => void;
+  onExport: () => void;
+  onImport: () => void;
 }
 
 interface NodeDef {
@@ -37,7 +39,7 @@ const DEFAULT_NODE_DATA: Record<NodeType, NodeData> = {
   "extract-frame": { type: "extract-frame", label: "Extract Frame", timestamp: "0", outputUrl: null, error: null },
 };
 
-export default function CommandPalette({ onRun }: CommandPaletteProps) {
+export default function CommandPalette({ onRun, onExport, onImport }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const { screenToFlowPosition } = useReactFlow();
   const addNode = useWorkflowStore((s) => s.addNode);
@@ -144,6 +146,22 @@ export default function CommandPalette({ onRun }: CommandPaletteProps) {
             >
               <Trash2 size={14} className="flex-none text-[#ef4444]" />
               Clear Canvas
+            </Command.Item>
+            <Command.Item
+              value="export as json"
+              onSelect={() => { close(); onExport(); }}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-white cursor-pointer hover:bg-[#252525] aria-selected:bg-[#252525] outline-none"
+            >
+              <Download size={14} className="flex-none text-[#525252]" />
+              Export as JSON
+            </Command.Item>
+            <Command.Item
+              value="import from json"
+              onSelect={() => { close(); onImport(); }}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-white cursor-pointer hover:bg-[#252525] aria-selected:bg-[#252525] outline-none"
+            >
+              <Upload size={14} className="flex-none text-[#525252]" />
+              Import from JSON
             </Command.Item>
           </Command.Group>
         </Command.List>

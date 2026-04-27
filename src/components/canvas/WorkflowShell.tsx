@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { ReactFlowProvider } from "reactflow";
 import { useWorkflowStore } from "@/store/workflow";
 import type { RunStatus, WorkflowNode, WorkflowEdge } from "@/types/workflow";
+import { exportWorkflowAsJson, parseWorkflowJson } from "@/lib/workflow-io";
 import NodeSidebar from "./NodeSidebar";
 import WorkflowCanvas from "./WorkflowCanvas";
 import HistorySidebar from "./HistorySidebar";
@@ -24,6 +25,7 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
 
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
+  const workflowName = useWorkflowStore((s) => s.workflowName);
   const setRunStatus = useWorkflowStore((s) => s.setRunStatus);
   const setExecutingNodeIds = useWorkflowStore((s) => s.setExecutingNodeIds);
   const loadWorkflow = useWorkflowStore((s) => s.loadWorkflow);
@@ -34,6 +36,7 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   const savedFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasLoadedRef = useRef(false);
   const skipNextSaveRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchWorkflow() {
@@ -145,6 +148,43 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [handleRun, undo, redo]);
 
+  function handleExport() {
+    exportWorkflowAsJson(workflowName, nodes, edges);
+  }
+
+  function handleTriggerImport() {
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result;
+      if (typeof text !== "string") return;
+      const parsed = parseWorkflowJson(text);
+      if (!parsed) {
+        toast.error("Invalid workflow file");
+        return;
+      }
+      skipNextSaveRef.current = true;
+      loadWorkflow(workflowId, parsed.name, parsed.nodes, parsed.edges);
+      try {
+        await fetch(`/api/workflows/${workflowId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: parsed.name, nodes: parsed.nodes, edges: parsed.edges }),
+        });
+        toast.success("Workflow imported");
+      } catch {
+        toast.error("Failed to save imported workflow");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }
+
   return (
     <ReactFlowProvider>
       <div className="h-screen w-screen overflow-hidden flex flex-col">
@@ -163,15 +203,40 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
               <span className="text-xs text-[#525252] flex-none">Saved</span>
             )}
           </div>
-          <button
-            type="button"
-            disabled={running}
-            onClick={handleRun}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6d28d9] hover:bg-[#7c3aed] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
-          >
-            {running && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            {running ? "Running..." : "Run"}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              title="Export workflow as JSON"
+              onClick={handleExport}
+              className="p-1.5 text-[#525252] hover:text-white rounded transition-colors"
+            >
+              <Download size={15} />
+            </button>
+            <button
+              type="button"
+              title="Import workflow from JSON"
+              onClick={handleTriggerImport}
+              className="p-1.5 text-[#525252] hover:text-white rounded transition-colors"
+            >
+              <Upload size={15} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <button
+              type="button"
+              disabled={running}
+              onClick={handleRun}
+              className="flex items-center gap-1.5 ml-2 px-3 py-1.5 bg-[#6d28d9] hover:bg-[#7c3aed] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
+            >
+              {running && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {running ? "Running..." : "Run"}
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 flex overflow-hidden">
@@ -180,7 +245,12 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
           <HistorySidebar workflowId={workflowId} />
         </div>
 
-        <CommandPalette workflowId={workflowId} onRun={handleRun} />
+        <CommandPalette
+          workflowId={workflowId}
+          onRun={handleRun}
+          onExport={handleExport}
+          onImport={handleTriggerImport}
+        />
       </div>
     </ReactFlowProvider>
   );
