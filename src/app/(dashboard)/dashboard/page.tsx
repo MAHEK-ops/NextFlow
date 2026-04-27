@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import Link from "next/link";
+import NewWorkflowButton from "@/components/dashboard/NewWorkflowButton";
 
 export const dynamic = "force-dynamic";
 
@@ -20,14 +21,7 @@ export default async function DashboardPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-semibold">Workflows</h1>
-          <form action="/api/workflows" method="POST">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-accent hover:bg-accent-light text-white text-sm rounded-lg transition-colors"
-            >
-              New workflow
-            </button>
-          </form>
+          <NewWorkflowButton />
         </div>
 
         {workflows.length === 0 ? (

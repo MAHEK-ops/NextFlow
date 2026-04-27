@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkflowStore } from "@/store/workflow";
-import type { RunStatus } from "@/types/workflow";
+import type { RunStatus, WorkflowNode, WorkflowEdge } from "@/types/workflow";
 import NodeSidebar from "./NodeSidebar";
 import WorkflowCanvas from "./WorkflowCanvas";
 import HistorySidebar from "./HistorySidebar";
@@ -14,18 +14,71 @@ interface WorkflowShellProps {
   initialName: string;
 }
 
+type SaveState = "idle" | "saving" | "saved";
+
 export default function WorkflowShell({ workflowId, initialName }: WorkflowShellProps) {
   const [running, setRunning] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
 
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
-  const setWorkflowId = useWorkflowStore((s) => s.setWorkflowId);
   const setRunStatus = useWorkflowStore((s) => s.setRunStatus);
   const setExecutingNodeIds = useWorkflowStore((s) => s.setExecutingNodeIds);
+  const loadWorkflow = useWorkflowStore((s) => s.loadWorkflow);
+
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasLoadedRef = useRef(false);
+  const skipNextSaveRef = useRef(false);
 
   useEffect(() => {
-    setWorkflowId(workflowId);
-  }, [workflowId, setWorkflowId]);
+    async function fetchWorkflow() {
+      try {
+        const res = await fetch(`/api/workflows/${workflowId}`);
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          id: string;
+          name: string;
+          nodes: WorkflowNode[];
+          edges: WorkflowEdge[];
+        };
+        skipNextSaveRef.current = true;
+        loadWorkflow(data.id, data.name, data.nodes, data.edges);
+      } finally {
+        hasLoadedRef.current = true;
+      }
+    }
+    fetchWorkflow();
+  }, [workflowId, loadWorkflow]);
+
+  const scheduleSave = useCallback(() => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      const { nodes: n, edges: e } = useWorkflowStore.getState();
+      setSaveState("saving");
+      try {
+        await fetch(`/api/workflows/${workflowId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nodes: n, edges: e }),
+        });
+        setSaveState("saved");
+        if (savedFeedbackTimeoutRef.current) clearTimeout(savedFeedbackTimeoutRef.current);
+        savedFeedbackTimeoutRef.current = setTimeout(() => setSaveState("idle"), 2000);
+      } catch {
+        setSaveState("idle");
+      }
+    }, 1000);
+  }, [workflowId]);
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+    if (skipNextSaveRef.current) {
+      skipNextSaveRef.current = false;
+      return;
+    }
+    scheduleSave();
+  }, [nodes, edges, scheduleSave]);
 
   async function handleRun() {
     if (running || nodes.length === 0) return;
@@ -66,12 +119,20 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col">
       <header className="h-12 flex-none flex items-center justify-between px-4 bg-[#111111] border-b border-[#1f1f1f]">
-        <input
-          type="text"
-          defaultValue={initialName}
-          placeholder="Untitled Workflow"
-          className="bg-transparent text-white text-sm font-medium placeholder:text-[#525252] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] rounded px-1 py-0.5 w-48 min-w-0"
-        />
+        <div className="flex items-center gap-3 min-w-0">
+          <input
+            type="text"
+            defaultValue={initialName}
+            placeholder="Untitled Workflow"
+            className="bg-transparent text-white text-sm font-medium placeholder:text-[#525252] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] rounded px-1 py-0.5 w-48 min-w-0"
+          />
+          {saveState === "saving" && (
+            <span className="text-xs text-[#525252] flex-none">Saving...</span>
+          )}
+          {saveState === "saved" && (
+            <span className="text-xs text-[#525252] flex-none">Saved</span>
+          )}
+        </div>
         <button
           type="button"
           disabled={running}
