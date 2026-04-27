@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import NewWorkflowButton from "@/components/dashboard/NewWorkflowButton";
+import LoadSampleButton from "@/components/dashboard/LoadSampleButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,10 @@ export default async function DashboardPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-semibold">Workflows</h1>
-          <NewWorkflowButton />
+          <div className="flex items-center gap-2">
+            <LoadSampleButton />
+            <NewWorkflowButton />
+          </div>
         </div>
 
         {workflows.length === 0 ? (
