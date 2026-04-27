@@ -4,7 +4,6 @@ import { useCallback, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
-  Controls,
   MiniMap,
   useReactFlow,
   applyNodeChanges,
@@ -16,8 +15,12 @@ import ReactFlow, {
   type OnConnectStartParams,
 } from "reactflow";
 import NodeContextMenu from "./NodeContextMenu";
-import { NODE_COLORS, type NodeType, type NodeData, type WorkflowNode, type WorkflowEdge } from "@/types/workflow";
+import CanvasToolbar, { type ActiveTool } from "./CanvasToolbar";
+import KeyboardShortcutsModal from "./KeyboardShortcutsModal";
+import { NODE_COLORS, type NodeType, type WorkflowNode, type WorkflowEdge } from "@/types/workflow";
+import { DEFAULT_NODE_DATA } from "@/lib/node-defaults";
 import { useWorkflowStore } from "@/store/workflow";
+import { useNodeShortcuts } from "@/hooks/useNodeShortcuts";
 import { toast } from "sonner";
 import { isValidConnection as checkConnection, getInvalidConnectionReason } from "@/lib/handle-validator";
 import TextNode from "@/components/nodes/TextNode";
@@ -27,7 +30,6 @@ import LLMNode from "@/components/nodes/LLMNode";
 import CropImageNode from "@/components/nodes/CropImageNode";
 import ExtractFrameNode from "@/components/nodes/ExtractFrameNode";
 
-// defined outside Flow so React Flow never sees a new object reference on re-render
 const nodeTypes = {
   text: TextNode,
   "upload-image": UploadImageNode,
@@ -35,16 +37,6 @@ const nodeTypes = {
   llm: LLMNode,
   "crop-image": CropImageNode,
   "extract-frame": ExtractFrameNode,
-};
-
-// default data for each node type when first dropped onto the canvas
-const DEFAULT_NODE_DATA: Record<NodeType, NodeData> = {
-  text: { type: "text", label: "Text", text: "" },
-  llm: { type: "llm", label: "LLM", model: "gemini-1.5-flash", systemPrompt: "", result: null, streaming: false, error: null },
-  "upload-image": { type: "upload-image", label: "Upload Image", imageUrl: null, fileName: null },
-  "upload-video": { type: "upload-video", label: "Upload Video", videoUrl: null, fileName: null },
-  "crop-image": { type: "crop-image", label: "Crop Image", xPercent: 0, yPercent: 0, widthPercent: 100, heightPercent: 100, outputUrl: null, error: null },
-  "extract-frame": { type: "extract-frame", label: "Extract Frame", timestamp: "0", outputUrl: null, error: null },
 };
 
 function getNodeColor(node: Node): string {
@@ -64,6 +56,12 @@ function Flow() {
   const { screenToFlowPosition } = useReactFlow();
 
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
+  const [activeTool, setActiveTool] = useState<ActiveTool>("select");
+  const [showMinimap, setShowMinimap] = useState(true);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
+  useNodeShortcuts(showShortcuts, () => setShowShortcuts(false));
+
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
   const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
@@ -77,14 +75,12 @@ function Flow() {
   });
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) =>
-      setNodes(applyNodeChanges(changes, nodes)),
+    (changes: NodeChange[]) => setNodes(applyNodeChanges(changes, nodes)),
     [setNodes, nodes]
   );
 
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges(applyEdgeChanges(changes, edges)),
+    (changes: EdgeChange[]) => setEdges(applyEdgeChanges(changes, edges)),
     [setEdges, edges]
   );
 
@@ -98,19 +94,13 @@ function Flow() {
       event.preventDefault();
       const nodeType = event.dataTransfer.getData("nodeType") as NodeType;
       if (!nodeType || !(nodeType in DEFAULT_NODE_DATA)) return;
-
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       const newNode: WorkflowNode = {
         id: crypto.randomUUID(),
         type: nodeType,
         position,
         data: DEFAULT_NODE_DATA[nodeType],
       };
-
       addNode(newNode);
     },
     [addNode, screenToFlowPosition]
@@ -148,22 +138,18 @@ function Flow() {
       if (!el) return;
       const handleEl = el.closest<HTMLElement>(".react-flow__handle");
       if (!handleEl) return;
-
       const targetHandleId = handleEl.getAttribute("data-handleid");
       const nodeEl = handleEl.closest<HTMLElement>("[data-id]");
       const targetNodeId = nodeEl?.getAttribute("data-id") ?? null;
       if (!targetNodeId || !targetHandleId) return;
-
       const { nodeId: sourceNodeId, handleId: sourceHandleId } = connectingNodeRef.current;
       if (!sourceNodeId || sourceNodeId === targetNodeId) return;
-
       const connection: Connection = {
         source: sourceNodeId,
         sourceHandle: sourceHandleId,
         target: targetNodeId,
         targetHandle: targetHandleId,
       };
-
       if (!checkConnection(connection, nodes)) {
         toast.error(getInvalidConnectionReason(connection, nodes));
       }
@@ -201,33 +187,26 @@ function Flow() {
           style: { stroke: "#7c3aed", strokeWidth: 2 },
           type: "smoothstep",
         }}
-        panOnDrag
+        panOnDrag={activeTool === "pan"}
+        selectionOnDrag={activeTool === "select"}
         zoomOnScroll
         snapToGrid={false}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={24}
-          size={1}
-          color="#2a2a2a"
-        />
-        <MiniMap
-          position="bottom-right"
-          nodeColor={getNodeColor}
-          style={{ background: "#111111" }}
-          maskColor="rgba(0,0,0,0.6)"
-        />
-        <Controls position="bottom-left" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#2a2a2a" />
+        {showMinimap && (
+          <MiniMap
+            position="bottom-right"
+            nodeColor={getNodeColor}
+            style={{ background: "#111111", marginBottom: "48px" }}
+            maskColor="rgba(0,0,0,0.6)"
+          />
+        )}
       </ReactFlow>
 
       {nodes.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-2">
-          <p className="text-sm text-[#525252] select-none">
-            Drag a node from the left panel to get started
-          </p>
-          <p className="text-xs text-[#3a3a3a] select-none">
-            Press Cmd+K to open the command palette
-          </p>
+          <p className="text-sm text-[#525252] select-none">Drag a node from the left panel to get started</p>
+          <p className="text-xs text-[#3a3a3a] select-none">Press Cmd+K to open the command palette</p>
         </div>
       )}
 
@@ -239,6 +218,16 @@ function Flow() {
           onClose={closeContextMenu}
         />
       )}
+
+      <CanvasToolbar
+        activeTool={activeTool}
+        setActiveTool={setActiveTool}
+        showMinimap={showMinimap}
+        setShowMinimap={setShowMinimap}
+        onOpenShortcuts={() => setShowShortcuts(true)}
+      />
+
+      <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
 }

@@ -39,6 +39,23 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   const skipNextSaveRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const saveNow = useCallback(async () => {
+    const { nodes: n, edges: e, workflowName: name } = useWorkflowStore.getState();
+    setSaveState("saving");
+    try {
+      await fetch(`/api/workflows/${workflowId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, nodes: n, edges: e }),
+      });
+      setSaveState("saved");
+      if (savedFeedbackTimeoutRef.current) clearTimeout(savedFeedbackTimeoutRef.current);
+      savedFeedbackTimeoutRef.current = setTimeout(() => setSaveState("idle"), 2000);
+    } catch {
+      setSaveState("idle");
+    }
+  }, [workflowId]);
+
   // Show the server-fetched name immediately before the fetch effect completes
   useEffect(() => {
     setWorkflowName(initialName);
@@ -66,23 +83,8 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
 
   const scheduleSave = useCallback(() => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(async () => {
-      const { nodes: n, edges: e, workflowName: name } = useWorkflowStore.getState();
-      setSaveState("saving");
-      try {
-        await fetch(`/api/workflows/${workflowId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, nodes: n, edges: e }),
-        });
-        setSaveState("saved");
-        if (savedFeedbackTimeoutRef.current) clearTimeout(savedFeedbackTimeoutRef.current);
-        savedFeedbackTimeoutRef.current = setTimeout(() => setSaveState("idle"), 2000);
-      } catch {
-        setSaveState("idle");
-      }
-    }, 1000);
-  }, [workflowId]);
+    saveTimeoutRef.current = setTimeout(() => void saveNow(), 1000);
+  }, [saveNow]);
 
   useEffect(() => {
     if (!hasLoadedRef.current) return;
@@ -137,6 +139,9 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      const isTyping = ["input", "textarea", "select"].includes(tag);
+
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         void handleRun();
@@ -149,10 +154,20 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
         e.preventDefault();
         redo();
       }
+      if (e.key === "s" && (e.metaKey || e.ctrlKey) && !isTyping) {
+        e.preventDefault();
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        void saveNow();
+      }
+      if (e.key === "a" && (e.metaKey || e.ctrlKey) && !isTyping) {
+        e.preventDefault();
+        const { nodes: n, setNodes: sn } = useWorkflowStore.getState();
+        sn(n.map((node) => ({ ...node, selected: true })));
+      }
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [handleRun, undo, redo]);
+  }, [handleRun, undo, redo, saveNow]);
 
   function handleExport() {
     exportWorkflowAsJson(workflowName, nodes, edges);
