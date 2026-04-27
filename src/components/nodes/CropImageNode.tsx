@@ -11,6 +11,9 @@ const ACCENT = NODE_COLORS["crop-image"];
 
 function CropImageNode({ id, data }: NodeProps<CropImageNodeData>) {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
+  const edges = useWorkflowStore((s) => s.edges);
+  const isConnected = (handleId: string) =>
+    edges.some((e) => e.target === id && e.targetHandle === handleId);
 
   return (
     <div className="min-w-[240px] bg-[#1a1a1a] border border-[#272727] rounded-lg overflow-hidden">
@@ -71,17 +74,17 @@ function CropImageNode({ id, data }: NodeProps<CropImageNodeData>) {
       <div className="px-3 pb-3 flex flex-col gap-1.5">
         {(
           [
-            ["X", "xPercent", data.xPercent],
-            ["Y", "yPercent", data.yPercent],
-            ["Width", "widthPercent", data.widthPercent],
-            ["Height", "heightPercent", data.heightPercent],
+            ["X", "xPercent", data.xPercent, "x_percent"],
+            ["Y", "yPercent", data.yPercent, "y_percent"],
+            ["Width", "widthPercent", data.widthPercent, "width_percent"],
+            ["Height", "heightPercent", data.heightPercent, "height_percent"],
           ] as const
-        ).map(([label, field, value]) => (
+        ).map(([label, field, value, handleId]) => (
           <div key={field} className="flex items-center justify-between">
             <span className="text-xs text-[#525252]">{label}</span>
             <input
               type="number"
-              className="nodrag bg-[#111111] text-white text-sm border border-[#272727] rounded p-1 w-16 text-right focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
+              className={`nodrag bg-[#111111] text-white text-sm border border-[#272727] rounded p-1 w-16 text-right focus:outline-none focus:ring-1 focus:ring-[#7c3aed] ${isConnected(handleId) ? "opacity-40 pointer-events-none" : ""}`}
               min={0}
               max={100}
               step={1}

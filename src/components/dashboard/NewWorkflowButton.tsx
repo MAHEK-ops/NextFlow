@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-export default function NewWorkflowButton() {
+export default function NewWorkflowButton({ label = "New workflow" }: { label?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -35,7 +35,7 @@ export default function NewWorkflowButton() {
       className="flex items-center gap-1.5 px-4 py-2 bg-accent hover:bg-accent-light disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors"
     >
       {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-      {loading ? "Creating..." : "New workflow"}
+      {loading ? "Creating..." : label}
     </button>
   );
 }

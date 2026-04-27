@@ -2,8 +2,10 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 import NewWorkflowButton from "@/components/dashboard/NewWorkflowButton";
 import LoadSampleButton from "@/components/dashboard/LoadSampleButton";
+import DeleteWorkflowButton from "@/components/dashboard/DeleteWorkflowButton";
 
 export const dynamic = "force-dynamic";
 
@@ -18,36 +20,43 @@ export default async function DashboardPage() {
   });
 
   return (
-    <main className="min-h-screen bg-canvas text-foreground p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold">Workflows</h1>
-          <div className="flex items-center gap-2">
+    <main className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="max-w-[720px] mx-auto px-6 py-12">
+        <div className="flex items-start justify-between mb-10">
+          <div>
+            <h1 className="text-2xl font-semibold text-white">Your Workflows</h1>
+            <p className="text-sm text-[#525252] mt-1">Build and run AI pipelines visually</p>
+          </div>
+          <div className="flex items-center gap-2 flex-none">
             <LoadSampleButton />
             <NewWorkflowButton />
           </div>
         </div>
 
         {workflows.length === 0 ? (
-          <p className="text-foreground-secondary text-sm">
-            No workflows yet. Create one to get started.
-          </p>
+          <div className="border border-dashed border-[#272727] rounded-xl p-12 flex flex-col items-center gap-4">
+            <p className="text-sm text-[#525252]">No workflows yet</p>
+            <NewWorkflowButton label="Create your first workflow" />
+          </div>
         ) : (
-          <ul className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {workflows.map((w) => (
-              <li key={w.id}>
-                <Link
-                  href={`/workflow/${w.id}`}
-                  className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg hover:border-border-strong transition-colors"
-                >
-                  <span className="font-medium">{w.name}</span>
-                  <span className="text-foreground-tertiary text-xs">
-                    {new Date(w.updatedAt).toLocaleDateString()}
-                  </span>
+              <div
+                key={w.id}
+                className="relative rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#272727] transition-colors"
+              >
+                <Link href={`/workflow/${w.id}`} className="block p-4 pr-10">
+                  <p className="text-sm font-medium text-white">{w.name}</p>
+                  <p className="text-xs text-[#525252] mt-1">
+                    Updated {formatDistanceToNow(new Date(w.updatedAt), { addSuffix: true })}
+                  </p>
                 </Link>
-              </li>
+                <div className="absolute top-3 right-3">
+                  <DeleteWorkflowButton workflowId={w.id} />
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </main>

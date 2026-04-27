@@ -11,6 +11,9 @@ const ACCENT = NODE_COLORS["llm"];
 
 function LLMNode({ id, data }: NodeProps<LLMNodeData>) {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
+  const edges = useWorkflowStore((s) => s.edges);
+  const isConnected = (handleId: string) =>
+    edges.some((e) => e.target === id && e.targetHandle === handleId);
 
   return (
     <div className="min-w-[280px] bg-[#1a1a1a] border border-[#272727] rounded-lg overflow-hidden">
@@ -46,9 +49,24 @@ function LLMNode({ id, data }: NodeProps<LLMNodeData>) {
         />
 
         <div className="flex flex-col gap-3 ml-3">
-          <span className="text-xs text-[#525252]">System Prompt</span>
-          <span className="text-xs text-[#525252]">User Message</span>
-          <span className="text-xs text-[#525252]">Images</span>
+          <span className="text-xs text-[#525252] flex items-center gap-1">
+            System Prompt
+            {isConnected("system_prompt") && (
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+            )}
+          </span>
+          <span className="text-xs text-[#525252] flex items-center gap-1">
+            User Message
+            {isConnected("user_message") && (
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+            )}
+          </span>
+          <span className="text-xs text-[#525252] flex items-center gap-1">
+            Images
+            {isConnected("images") && (
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+            )}
+          </span>
         </div>
       </div>
 

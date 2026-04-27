@@ -26,6 +26,7 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
   const workflowName = useWorkflowStore((s) => s.workflowName);
+  const setWorkflowName = useWorkflowStore((s) => s.setWorkflowName);
   const setRunStatus = useWorkflowStore((s) => s.setRunStatus);
   const setExecutingNodeIds = useWorkflowStore((s) => s.setExecutingNodeIds);
   const loadWorkflow = useWorkflowStore((s) => s.loadWorkflow);
@@ -37,6 +38,11 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   const hasLoadedRef = useRef(false);
   const skipNextSaveRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Show the server-fetched name immediately before the fetch effect completes
+  useEffect(() => {
+    setWorkflowName(initialName);
+  }, [initialName, setWorkflowName]);
 
   useEffect(() => {
     async function fetchWorkflow() {
@@ -61,13 +67,13 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   const scheduleSave = useCallback(() => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
-      const { nodes: n, edges: e } = useWorkflowStore.getState();
+      const { nodes: n, edges: e, workflowName: name } = useWorkflowStore.getState();
       setSaveState("saving");
       try {
         await fetch(`/api/workflows/${workflowId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nodes: n, edges: e }),
+          body: JSON.stringify({ name, nodes: n, edges: e }),
         });
         setSaveState("saved");
         if (savedFeedbackTimeoutRef.current) clearTimeout(savedFeedbackTimeoutRef.current);
@@ -192,8 +198,12 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
           <div className="flex items-center gap-3 min-w-0">
             <input
               type="text"
-              defaultValue={initialName}
+              value={workflowName}
               placeholder="Untitled Workflow"
+              onChange={(e) => {
+                setWorkflowName(e.target.value);
+                scheduleSave();
+              }}
               className="bg-transparent text-white text-sm font-medium placeholder:text-[#525252] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] rounded px-1 py-0.5 w-48 min-w-0"
             />
             {saveState === "saving" && (
