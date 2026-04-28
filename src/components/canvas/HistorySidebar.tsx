@@ -146,7 +146,7 @@ export default function HistorySidebar({ workflowId, onClose }: HistorySidebarPr
   }
 
   return (
-    <aside className="w-[260px] flex-none flex flex-col bg-[#111111] border-l border-[#1f1f1f]">
+    <aside className="w-[260px] flex-none flex flex-col border-l" style={{ background: "var(--sidebar-bg)", borderColor: "var(--topbar-border)" }}>
       <div className="h-12 flex items-center px-4 border-b border-[#1f1f1f]">
         <span className="text-sm font-medium text-[#e5e5e5] flex-1">Workflow History</span>
         {onClose && (

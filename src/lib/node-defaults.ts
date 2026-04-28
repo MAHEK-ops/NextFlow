@@ -8,3 +8,9 @@ export const DEFAULT_NODE_DATA: Record<NodeType, NodeData> = {
   "crop-image": { type: "crop-image", label: "Crop Image", xPercent: 0, yPercent: 0, widthPercent: 100, heightPercent: 100, outputUrl: null, error: null },
   "extract-frame": { type: "extract-frame", label: "Extract Frame", timestamp: "0", outputUrl: null, error: null },
 };
+
+export const HANDLE_COLORS = {
+  text: "#eab308",
+  image: "#3b82f6",
+  video: "#a855f7",
+} as const;

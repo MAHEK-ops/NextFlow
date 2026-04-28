@@ -54,7 +54,7 @@ export default function TopBar({
   }, [dropdownOpen]);
 
   return (
-    <div className="h-[52px] flex-none flex items-center justify-between px-3 bg-[#0a0a0a] border-b border-[#1a1a1a]">
+    <div className="h-[52px] flex-none flex items-center justify-between px-3 border-b" style={{ background: "var(--topbar-bg)", borderColor: "var(--topbar-border)" }}>
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -158,7 +158,7 @@ export default function TopBar({
               >
                 <div className="flex items-center">
                   <Clock size={14} className="text-[#525252]" />
-                  <span className="text-sm text-[#e5e5e5] ml-2">Version History</span>
+                  <span className="text-sm text-[#e5e5e5] ml-2">Workflow History</span>
                 </div>
                 <span className="text-xs text-[#525252] font-mono">⌥⌘S</span>
               </button>

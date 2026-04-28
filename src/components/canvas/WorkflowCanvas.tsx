@@ -193,6 +193,7 @@ function Flow() {
         selectionOnDrag={activeTool === "select"}
         zoomOnScroll
         snapToGrid={false}
+        style={{ background: "var(--canvas-bg)" }}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#2a2a2a" />
         {showMinimap && (
@@ -253,7 +254,7 @@ function Flow() {
 
 export default function WorkflowCanvas() {
   return (
-    <main className="relative w-full h-full bg-[#0a0a0a] dark:bg-[#0a0a0a]">
+    <main className="relative w-full h-full" style={{ background: "var(--canvas-bg)" }}>
       <Flow />
     </main>
   );
