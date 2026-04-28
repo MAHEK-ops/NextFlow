@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Plus, MoreHorizontal, ExternalLink, Pencil, Copy, Trash2, X, Loader2 } from "lucide-react";
 import { SAMPLE_WORKFLOW_NAME, SAMPLE_NODES, SAMPLE_EDGES } from "@/lib/sample-workflow";
@@ -324,25 +325,23 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                         <p className="text-sm text-[#525252] text-center max-w-xs">
                             You haven&apos;t created any workflows yet.<br />Get started by creating your first one.
                         </p>
-                        <button
-                            type="button"
-                            onClick={() => void handleCreateNew()}
-                            disabled={creatingNew}
-                            className="px-6 py-2.5 bg-white text-black text-sm font-medium rounded-full hover:bg-[#e5e5e5] disabled:opacity-60 transition-colors"
-                        >
-                            New Workflow
-                        </button>
-                        <a
-                            href="#"
-                            className="text-sm text-[#525252] hover:text-white transition-colors flex items-center gap-1"
-                        >
-                            Learn More
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                <polyline points="15 3 21 3 21 9" />
-                                <line x1="10" y1="14" x2="21" y2="3" />
-                            </svg>
-                        </a>
+                        {isSignedIn ? (
+                            <button
+                                type="button"
+                                onClick={() => void handleCreateNew()}
+                                disabled={creatingNew}
+                                className="px-6 py-2.5 bg-white text-black text-sm font-medium rounded-full hover:bg-[#e5e5e5] disabled:opacity-60 transition-colors"
+                            >
+                                New Workflow
+                            </button>
+                        ) : (
+                            <Link
+                                href="/sign-in"
+                                className="px-6 py-2.5 bg-white text-black text-sm font-medium rounded-full hover:bg-[#e5e5e5] transition-colors"
+                            >
+                                Sign in
+                            </Link>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
@@ -386,66 +385,21 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                                     onContextMenu={(e) => openContextMenu(e, w)}
                                 >
 
-                                    {/* Canvas Preview (SVG like Krea) */}
-                                    {w.nodes && w.edges ? (
-                                        <svg
-                                            viewBox="-50 -50 800 600"
-                                            preserveAspectRatio="xMidYMid meet"
-                                            className="w-full h-full"
-                                        >
-                                            {/* Edges */}
-                                            {w.edges.map((edge: any, i: number) => {
-                                                const source = w.nodes?.find((n) => n.id === edge.source);
-                                                const target = w.nodes?.find((n) => n.id === edge.target);
-
-                                                if (!source || !target) return null;
-
-                                                const x1 = source.position.x + 120;
-                                                const y1 = source.position.y + 40;
-                                                const x2 = target.position.x;
-                                                const y2 = target.position.y + 40;
-
-                                                return (
-                                                    <path
-                                                        key={i}
-                                                        d={`M ${x1} ${y1} C ${x1 + 80} ${y1}, ${x2 - 80} ${y2}, ${x2} ${y2}`}
-                                                        stroke="#7c3aed"
-                                                        strokeWidth="4"
-                                                        fill="none"
-                                                        strokeLinecap="round"
-                                                        opacity="0.85"
-                                                    />
-                                                );
-                                            })}
-
-                                            {/* Nodes */}
-                                            {w.nodes.map((node: any) => (
-                                                <g key={node.id}>
-                                                    <rect
-                                                        x={node.position.x}
-                                                        y={node.position.y}
-                                                        width={node.width || 180}
-                                                        height={node.height || 100}
-                                                        rx="20"
-                                                        fill="#3a3a3a"
-                                                        stroke="#525252"
-                                                        strokeWidth="2"
-                                                    />
-                                                    <circle
-                                                        cx={node.position.x + (node.width || 180)}
-                                                        cy={node.position.y + 20}
-                                                        r="6"
-                                                        fill="#22c55e"
-                                                        opacity="0.9"
-                                                    />
-                                                </g>
-                                            ))}
-                                        </svg>
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[#525252] text-sm">
-                                            No preview
+                                    {/* Canvas preview placeholder */}
+                                    <div
+                                        className="w-full h-full flex items-center justify-center"
+                                        style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)" }}
+                                    >
+                                        <div className="relative w-32 h-20 opacity-50">
+                                            <div className="absolute top-2 left-2 w-8 h-8 rounded-lg bg-[#3b82f6]" />
+                                            <div className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-[#7c3aed]" />
+                                            <div className="absolute bottom-2 left-8 w-8 h-8 rounded-lg bg-[#10b981]" />
+                                            <svg className="absolute inset-0 w-full h-full">
+                                                <line x1="18" y1="18" x2="50" y2="44" stroke="#4a4a4a" strokeWidth="1.5" />
+                                                <line x1="110" y1="18" x2="78" y2="44" stroke="#4a4a4a" strokeWidth="1.5" />
+                                            </svg>
                                         </div>
-                                    )}
+                                    </div>
 
                                     {/* Three dot menu */}
                                     <button

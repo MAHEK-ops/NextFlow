@@ -37,16 +37,26 @@ export async function executeCropNode(
   const imageBuffer = await fetchImageBuffer(imageUrl);
   const image = sharp(imageBuffer);
   const metadata = await image.metadata();
-  const width = metadata.width ?? 100;
-  const height = metadata.height ?? 100;
+  const imageWidth = metadata.width ?? 100;
+  const imageHeight = metadata.height ?? 100;
 
-  const left = Math.round((xPercent / 100) * width);
-  const top = Math.round((yPercent / 100) * height);
-  const cropWidth = Math.max(1, Math.round((widthPercent / 100) * width));
-  const cropHeight = Math.max(1, Math.round((heightPercent / 100) * height));
+  const left = Math.round((xPercent / 100) * imageWidth);
+  const top = Math.round((yPercent / 100) * imageHeight);
+
+  const cropWidth = Math.max(1, Math.min(
+    Math.round((widthPercent / 100) * imageWidth),
+    imageWidth - left
+  ));
+  const cropHeight = Math.max(1, Math.min(
+    Math.round((heightPercent / 100) * imageHeight),
+    imageHeight - top
+  ));
+
+  const safeLeft = Math.max(0, Math.min(left, imageWidth - 1));
+  const safeTop = Math.max(0, Math.min(top, imageHeight - 1));
 
   const croppedBuffer = await image
-    .extract({ left, top, width: cropWidth, height: cropHeight })
+    .extract({ left: safeLeft, top: safeTop, width: cropWidth, height: cropHeight })
     .jpeg()
     .toBuffer();
 

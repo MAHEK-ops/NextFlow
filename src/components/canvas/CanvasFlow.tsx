@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -72,6 +72,22 @@ export default function CanvasFlow() {
   const [isDraggingAsset, setIsDraggingAsset] = useState(false);
 
   useNodeShortcuts(showShortcuts, () => setShowShortcuts(false), () => setShowNodePicker(true));
+
+  useEffect(() => {
+    function handleDeleteKey(e: KeyboardEvent) {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      if (["input", "textarea", "select"].includes(tag)) return;
+      const selected = useWorkflowStore.getState().nodes.filter(
+        (n) => n.selected && n.type !== "group"
+      );
+      for (const node of selected) {
+        removeNode(node.id);
+      }
+    }
+    document.addEventListener("keydown", handleDeleteKey);
+    return () => document.removeEventListener("keydown", handleDeleteKey);
+  }, [removeNode]);
 
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
@@ -238,7 +254,7 @@ export default function CanvasFlow() {
         onConnect={onConnect} onConnectStart={onConnectStart} onConnectEnd={onConnectEnd}
         onNodeContextMenu={onNodeContextMenu} onEdgeClick={onEdgeClick}
         isValidConnection={validateConnection} nodeTypes={nodeTypes}
-        deleteKeyCode={["Delete", "Backspace"]} multiSelectionKeyCode="Shift"
+        deleteKeyCode={null} multiSelectionKeyCode="Shift"
         fitView={false} defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         connectionLineStyle={{ stroke: "#7c3aed", strokeWidth: 2 }}
         defaultEdgeOptions={{ animated: true, style: { stroke: "#7c3aed", strokeWidth: 2 }, type: "smoothstep" }}

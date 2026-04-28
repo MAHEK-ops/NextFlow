@@ -20,6 +20,19 @@ type GeminiResponse = {
   }>;
 };
 
+async function callGemini(
+  modelName: string,
+  body: Record<string, unknown>,
+  apiKey: string
+): Promise<Response> {
+  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+  return fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
 export async function executeLlmNode(
   nodeData: LLMNodeData,
   inputs: Record<string, unknown>
@@ -49,7 +62,9 @@ export async function executeLlmNode(
     throw new Error("LLM node requires at least one input: a message, system prompt, or image");
   }
 
-  const modelName = sanitizeModel(nodeData.model || "gemini-2.0-flash");
+  const primaryModel = sanitizeModel(nodeData.model || "gemini-2.0-flash");
+  const fallbackModel = primaryModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : "gemini-1.5-flash";
+
   const parts: Part[] = [];
 
   const combinedText = [systemPrompt?.trim(), userMessage.trim()]
@@ -81,13 +96,11 @@ export async function executeLlmNode(
     contents: [{ role: "user", parts }],
   };
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+  let res = await callGemini(primaryModel, body, apiKey);
 
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  if (res.status === 429) {
+    res = await callGemini(fallbackModel, body, apiKey);
+  }
 
   if (!res.ok) {
     const err = await res.text();
