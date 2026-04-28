@@ -180,7 +180,7 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
                 {/* Hero banner */}
                 <div className="relative w-full h-[400px] overflow-hidden flex-none">
                     <img
-                        src="/hero-bg.webp"
+                        src="/hero-bg.jpeg"
                         alt=""
                         className="absolute inset-0 w-full h-full object-cover object-center"
                     />

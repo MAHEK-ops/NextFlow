@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
-import { Loader2, Trash2, Copy, Pencil, Download, Maximize2 } from "lucide-react";
+import { Loader2, Trash2, Copy, Pencil, Download, Maximize2, Upload } from "lucide-react";
 import Uppy from "@uppy/core";
 import Transloadit, { type Result as TransloaditResult } from "@uppy/transloadit";
 import { HANDLE_COLORS } from "@/lib/node-defaults";
@@ -125,15 +125,17 @@ function UploadImageNode({ id, data, selected }: NodeProps<UploadImageNodeData>)
             </button>
           </div>
         ) : (
-          <div className="border border-dashed rounded-xl p-4 flex flex-col items-center gap-2" style={{ borderColor: "var(--input-border)" }}>
+          <div
+            className="flex flex-col items-center justify-center gap-3 py-6 rounded-xl border border-dashed border-[#2a2a2a] cursor-pointer hover:border-[#3a3a3a] transition-colors"
+            onClick={uploading ? undefined : openPicker}
+          >
             {uploading ? (
-              <Loader2 size={18} className="animate-spin" style={{ color: "var(--text-muted)" }} />
+              <Loader2 size={20} className="animate-spin text-[#3a3a3a]" />
             ) : (
-              <button type="button" onClick={openPicker}
-                className="nodrag text-sm transition-colors hover:text-[var(--text-primary)]"
-                style={{ color: "var(--text-muted)" }}>
-                Upload image
-              </button>
+              <>
+                <Upload size={20} className="text-[#3a3a3a]" />
+                <span className="text-xs text-[#525252]">Upload image</span>
+              </>
             )}
           </div>
         )}

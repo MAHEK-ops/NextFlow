@@ -16,11 +16,10 @@ export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) 
   const { flowToScreenPosition } = useReactFlow();
 
   const selected = nodes.filter((n) => n.selected);
-  if (selected.length === 0) return null;
-  if (selected.length === 1 && selected[0]?.type === "group") return null;
+  if (selected.length < 2) return null;
 
   const minX = Math.min(...selected.map((n) => n.position.x));
-  const maxX = Math.max(...selected.map((n) => n.position.x + (n.width ?? 200)));
+  const maxX = Math.max(...selected.map((n) => n.position.x + (n.width ?? 240)));
   const minY = Math.min(...selected.map((n) => n.position.y));
   const centerX = (minX + maxX) / 2;
 

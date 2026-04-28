@@ -48,26 +48,24 @@ export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, c
   return (
     <div className="relative" style={{ minWidth }}>
       {selected && !overlay && (
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+        <div className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
           <button
             type="button"
             onClick={() => void handleRunNode()}
-            className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-sm transition-colors shadow-lg border hover:bg-[var(--input-bg)]"
-            style={{ background: "var(--toolbar-bg)", borderColor: "var(--toolbar-border)", color: "var(--text-primary)" }}
+            className="flex items-center gap-1.5 h-7 px-3 bg-[#1a1a1a] border border-[#2a2a2a] hover:bg-[#222222] rounded-full text-xs text-[#e5e5e5] transition-colors shadow-lg whitespace-nowrap"
           >
-            <Play size={12} style={{ color: "var(--text-muted)" }} />
+            <Play size={10} fill="currentColor" className="text-[#aaaaaa]" />
             Run node
           </button>
         </div>
       )}
       {overlay}
       <div
-        className={`border rounded-2xl overflow-hidden ${selected ? "border-[#7c3aed]" : "border-[var(--node-border)]"}`}
-        style={{ background: "var(--node-bg)" }}
+        className={`border rounded-2xl overflow-hidden bg-[#111111] ${selected ? "border-[#6d4aed]/60" : "border-[#2a2a2a]"}`}
       >
-        <div className="flex items-center justify-between px-3 py-2.5 border-b" style={{ borderColor: "var(--toolbar-border)" }}>
-          <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{label}</span>
-          <Info size={13} style={{ color: "var(--text-muted)" }} />
+        <div className="flex items-center justify-between px-3 py-2 border-b border-[#1f1f1f]">
+          <span className="text-xs font-medium text-[#666666]">{label}</span>
+          <Info size={13} className="text-[#3a3a3a]" />
         </div>
         {children}
       </div>
