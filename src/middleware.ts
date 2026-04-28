@@ -1,9 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isDashboardRoute = createRouteMatcher(["/(dashboard)(.*)"]);
+// Only protect individual workflow pages — the dashboard list is publicly viewable
+const isProtectedRoute = createRouteMatcher(["/workflow/(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isDashboardRoute(req)) {
+  if (isProtectedRoute(req)) {
     await auth.protect();
   }
 });
