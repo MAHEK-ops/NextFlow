@@ -42,12 +42,15 @@ export default function TopBar({
   onImport,
   onExport,
 }: TopBarProps) {
+  const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [titleDropdownOpen, setTitleDropdownOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const titleDropdownRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -129,7 +132,7 @@ export default function TopBar({
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#141414] border border-[#272727] text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors cursor-pointer"
         >
-          {theme === "dark" ? <Moon size={15} /> : <Sun size={15} />}
+          {mounted ? (theme === "dark" ? <Moon size={15} /> : <Sun size={15} />) : <Moon size={15} />}
         </button>
 
         <button

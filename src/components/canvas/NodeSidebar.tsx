@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
@@ -100,14 +100,16 @@ interface NodeSidebarProps {
 export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
   const [search, setSearch] = useState("");
   const [showProfile, setShowProfile] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { user } = useUser();
-  const initial = (
-    user?.firstName?.[0] ??
-    user?.emailAddresses?.[0]?.emailAddress?.[0] ??
-    "U"
-  ).toUpperCase();
-  const username = user?.username ?? user?.firstName ?? "User";
+
+  useEffect(() => { setMounted(true); }, []);
+
+  const initial = mounted
+    ? (user?.firstName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0] ?? "U").toUpperCase()
+    : "U";
+  const username = mounted ? (user?.username ?? user?.firstName ?? "User") : "User";
 
   const navBase =
     "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm w-full text-left transition-colors";
@@ -163,17 +165,20 @@ export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
         </div>
       </div>
 
-      <div className="mt-auto border-t p-3" style={{ borderColor: "var(--toolbar-border)" }}>
+      <div className="mt-auto border-t p-2" style={{ borderColor: "var(--toolbar-border)" }}>
         <div className="relative">
           <button
             type="button"
             onClick={() => setShowProfile(!showProfile)}
-            className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-[#1a1a1a] transition-colors cursor-pointer w-full"
+            className="flex items-center gap-2.5 px-3 py-2.5 mx-1 rounded-xl hover:bg-[#1a1a1a] transition-colors cursor-pointer w-full"
           >
-            <div className="w-7 h-7 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center text-xs text-white font-medium flex-none">
+            <div className="w-9 h-9 rounded-xl bg-[#1c1c1e] border border-[#272727] flex items-center justify-center text-sm text-white font-medium flex-none">
               {initial}
             </div>
-            <span className="text-xs text-[#c5c5c5] truncate">{username}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm text-[#e5e5e5] font-medium truncate max-w-[120px]">{username}</span>
+              <span className="text-xs text-[#525252]">Free</span>
+            </div>
           </button>
           {showProfile && (
             <UserProfilePopup onClose={() => setShowProfile(false)} userInitial={initial} />
