@@ -12,8 +12,6 @@
     "@google/generative-ai": "^0.21.0",
     "@prisma/client": "^5",
     "@trigger.dev/sdk": "^4.4.4",
-    "@uppy/core": "^3",
-    "@uppy/transloadit": "^3",
     "clsx": "^2",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",

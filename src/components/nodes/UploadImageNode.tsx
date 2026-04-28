@@ -1,18 +1,14 @@
 "use client";
 
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import { Loader2, Trash2, Copy, Pencil, Download, Maximize2, Upload } from "lucide-react";
-import Uppy from "@uppy/core";
-import Transloadit, { type Result as TransloaditResult } from "@uppy/transloadit";
 import { HANDLE_COLORS } from "@/lib/node-defaults";
 import type { UploadImageNodeData } from "@/types/workflow";
 import { useWorkflowStore } from "@/store/workflow";
 import NodeWrapper from "./NodeWrapper";
 
 const HC = HANDLE_COLORS;
-const TRANSLOADIT_KEY = process.env.NEXT_PUBLIC_TRANSLOADIT_KEY ?? "";
-type UppyInstance = InstanceType<typeof Uppy>;
 
 function ImageActionBar({ id, imageUrl }: { id: string; imageUrl: string }) {
   const deleteNode = useWorkflowStore((s) => s.deleteNode);
@@ -66,85 +62,122 @@ function ImageActionBar({ id, imageUrl }: { id: string; imageUrl: string }) {
 function UploadImageNode({ id, data, selected }: NodeProps<UploadImageNodeData>) {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
   const addAssetUrl = useWorkflowStore((s) => s.addAssetUrl);
-  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const uppyRef = useRef<UppyInstance | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const uppy = new Uppy({ autoProceed: true }).use(Transloadit, {
-      assemblyOptions: {
-        params: {
-          auth: { key: TRANSLOADIT_KEY },
-          steps: { exported: { use: ":original", robot: "/image/resize", format: "preserve" } },
-        },
-      },
-    });
-    uppy.on("upload", () => { setUploading(true); setError(null); });
-    uppy.on("transloadit:result", (_s: string, result: TransloaditResult) => {
-      const url = result.ssl_url ?? result.url;
-      updateNodeData(id, { imageUrl: url, fileName: result.name });
-      addAssetUrl(url);
-    });
-    uppy.on("transloadit:complete", () => setUploading(false));
-    uppy.on("upload-error", (_f, err: Error) => { setUploading(false); setError(err.message); });
-    uppyRef.current = uppy;
-    return () => { uppy.close(); };
-  }, [id, updateNodeData, addAssetUrl]);
+  const handleFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !uppyRef.current) return;
-    try {
-      uppyRef.current.cancelAll();
-      uppyRef.current.addFile({ name: file.name, type: file.type, data: file });
-    } catch (err) {
-      if (err instanceof Error) setError(err.message);
-    }
-    e.target.value = "";
-  }, []);
+      console.log('Upload started', file.name, file.size);
 
-  const openPicker = useCallback(() => fileInputRef.current?.click(), []);
+      setLoading(true);
+      setError(null);
 
-  const overlay = selected && data.imageUrl
-    ? <ImageActionBar id={id} imageUrl={data.imageUrl} />
-    : undefined;
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        console.log('Calling upload...');
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        console.log('Response status:', res.status);
+
+        if (!res.ok) throw new Error("Upload failed");
+
+        const responseData = (await res.json()) as { url: string };
+
+        console.log('Result:', { url: responseData.url.slice(0, 30) });
+
+        updateNodeData(id, { imageUrl: responseData.url, fileName: file.name });
+        addAssetUrl(responseData.url);
+      } catch {
+        setError("Upload failed. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+
+      e.target.value = "";
+    },
+    [id, updateNodeData, addAssetUrl]
+  );
+
+  const overlay =
+    selected && data.imageUrl ? (
+      <ImageActionBar id={id} imageUrl={data.imageUrl} />
+    ) : undefined;
 
   return (
     <NodeWrapper nodeId={id} label={data.label} selected={selected} overlay={overlay}>
       <div className="px-3 py-2.5">
         {data.imageUrl ? (
           <div>
-            <img src={data.imageUrl} alt={data.fileName ?? "uploaded image"}
-              className="w-full max-h-[120px] object-cover rounded-xl" />
-            <p className="mt-1.5 text-xs truncate" style={{ color: "var(--text-muted)" }}>{data.fileName}</p>
-            <button type="button" onClick={openPicker} disabled={uploading}
+            <div className="rounded-xl overflow-hidden">
+              <img
+                src={data.imageUrl}
+                alt={data.fileName ?? "uploaded image"}
+                className="w-full object-cover"
+              />
+            </div>
+            <p className="mt-1.5 text-xs truncate" style={{ color: "var(--text-muted)" }}>
+              {data.fileName}
+            </p>
+            <button
+              type="button"
+              onClick={() => replaceInputRef.current?.click()}
+              disabled={loading}
               className="nodrag mt-2 w-full text-xs transition-colors disabled:opacity-50 hover:text-[var(--text-primary)]"
-              style={{ color: "var(--text-muted)" }}>
-              {uploading ? "Uploading..." : "Replace image"}
+              style={{ color: "var(--text-muted)" }}
+            >
+              {loading ? "Uploading..." : "Replace image"}
             </button>
+            <input
+              ref={replaceInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handleFileChange}
+            />
           </div>
         ) : (
-          <div
-            className="flex flex-col items-center justify-center gap-3 py-6 rounded-xl border border-dashed border-[#2a2a2a] cursor-pointer hover:border-[#3a3a3a] transition-colors"
-            onClick={uploading ? undefined : openPicker}
-          >
-            {uploading ? (
-              <Loader2 size={20} className="animate-spin text-[#3a3a3a]" />
+          <label className="flex flex-col items-center justify-center gap-2 py-8 rounded-xl border border-dashed border-[#2a2a2a] cursor-pointer hover:border-[#3a3a3a] transition-colors w-full">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            {loading ? (
+              <Loader2 size={20} className="text-[#525252] animate-spin" />
             ) : (
               <>
                 <Upload size={20} className="text-[#3a3a3a]" />
-                <span className="text-xs text-[#525252]">Upload image</span>
+                <span className="text-xs text-[#525252]">Click to upload image</span>
               </>
             )}
-          </div>
+          </label>
         )}
         {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
       </div>
-      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
-        className="hidden" onChange={handleFileChange} />
-      <Handle type="source" position={Position.Right} id="output" data-handletype="image"
-        style={{ background: HC.image, borderColor: "var(--node-bg)", width: 12, height: 12, border: "2px solid var(--node-bg)" }} />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="output"
+        data-handletype="image"
+        style={{
+          background: HC.image,
+          borderColor: "var(--node-bg)",
+          width: 12,
+          height: 12,
+          border: "2px solid var(--node-bg)",
+        }}
+      />
     </NodeWrapper>
   );
 }
