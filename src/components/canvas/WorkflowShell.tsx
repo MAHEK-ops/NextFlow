@@ -178,9 +178,9 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
           onToggleSidebar={() => setShowSidebar((v) => !v)}
           showVersionHistory={showVersionHistory}
           onToggleVersionHistory={() => setShowVersionHistory((v) => !v)}
-          onOpenAssets={() => {
-            setShowAssetsPanel(true);
-          }}
+          onOpenAssets={() => setShowAssetsPanel(true)}
+          onImport={handleTriggerImport}
+          onExport={handleExport}
         />
 
         <div className="flex-1 flex overflow-hidden">

@@ -22,5 +22,9 @@ export default async function WorkflowPage({ params }: WorkflowPageProps) {
     notFound();
   }
 
-  return <WorkflowShell workflowId={workflow.id} initialName={workflow.name} />;
+  return (
+    <div className="fixed inset-0 z-50 bg-[#0a0a0a]">
+      <WorkflowShell workflowId={workflow.id} initialName={workflow.name} />
+    </div>
+  );
 }

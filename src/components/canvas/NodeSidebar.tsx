@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import {
   Home,
   Layers,
@@ -16,6 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useReactFlow } from "reactflow";
+import UserProfilePopup from "./UserProfilePopup";
 import { NODE_COLORS, type NodeType } from "@/types/workflow";
 import { useWorkflowStore } from "@/store/workflow";
 import { DEFAULT_NODE_DATA } from "@/lib/node-defaults";
@@ -97,7 +99,15 @@ interface NodeSidebarProps {
 
 export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
   const [search, setSearch] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
   const router = useRouter();
+  const { user } = useUser();
+  const initial = (
+    user?.firstName?.[0] ??
+    user?.emailAddresses?.[0]?.emailAddress?.[0] ??
+    "U"
+  ).toUpperCase();
+  const username = user?.username ?? user?.firstName ?? "User";
 
   const navBase =
     "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm w-full text-left transition-colors";
@@ -150,6 +160,24 @@ export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
           {filtered.map((def) => (
             <NodeRow key={def.type} {...def} />
           ))}
+        </div>
+      </div>
+
+      <div className="mt-auto border-t p-3" style={{ borderColor: "var(--toolbar-border)" }}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowProfile(!showProfile)}
+            className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-[#1a1a1a] transition-colors cursor-pointer w-full"
+          >
+            <div className="w-7 h-7 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center text-xs text-white font-medium flex-none">
+              {initial}
+            </div>
+            <span className="text-xs text-[#c5c5c5] truncate">{username}</span>
+          </button>
+          {showProfile && (
+            <UserProfilePopup onClose={() => setShowProfile(false)} userInitial={initial} />
+          )}
         </div>
       </div>
     </aside>

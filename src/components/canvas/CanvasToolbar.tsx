@@ -13,7 +13,6 @@ import {
   Map,
 } from "lucide-react";
 import { useWorkflowStore } from "@/store/workflow";
-import { useUser } from "@clerk/nextjs";
 
 export type ActiveTool = "select" | "pan";
 
@@ -51,22 +50,10 @@ export default function CanvasToolbar({
 }: Props) {
   const undo = useWorkflowStore((s) => s.undo);
   const redo = useWorkflowStore((s) => s.redo);
-  const { user } = useUser();
-  const initial = (user?.firstName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0] ?? "U").toUpperCase();
-  const username = user?.username ?? user?.firstName ?? "User";
 
   return (
     <>
       <div className="absolute bottom-6 left-4 z-10 flex items-center gap-2">
-        <div className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-[#1a1a1a] cursor-pointer transition-colors max-w-[180px]">
-          <div className="w-7 h-7 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center text-xs text-white font-medium flex-shrink-0">
-            {initial}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-xs text-[#e5e5e5] font-medium truncate">{username}</span>
-            <span className="text-[10px] text-[#525252]">Free</span>
-          </div>
-        </div>
         <button type="button" onClick={undo} className={borderedBtn} title="Undo">
           <RotateCcw size={16} />
         </button>
