@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { Loader2, ChevronDown, ChevronRight, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { WorkflowRunRecord, RunStatus, RunScope, NodeExecutionRecord } from "@/types/workflow";
 
 interface HistorySidebarProps {
   workflowId: string;
+  onClose?: () => void;
 }
 
 const STATUS_STYLES: Record<RunStatus, { bg: string; text: string; label: string }> = {
@@ -108,7 +109,7 @@ function RunEntry({
   );
 }
 
-export default function HistorySidebar({ workflowId }: HistorySidebarProps) {
+export default function HistorySidebar({ workflowId, onClose }: HistorySidebarProps) {
   const [runs, setRuns] = useState<WorkflowRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -146,10 +147,18 @@ export default function HistorySidebar({ workflowId }: HistorySidebarProps) {
 
   return (
     <aside className="w-[260px] flex-none flex flex-col bg-[#111111] border-l border-[#1f1f1f]">
-      <p className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#525252]">
-        History
-      </p>
-      <div className="border-b border-[#1f1f1f]" />
+      <div className="h-12 flex items-center px-4 border-b border-[#1f1f1f]">
+        <span className="text-sm font-medium text-[#e5e5e5] flex-1">Workflow History</span>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-[#1a1a1a] transition-colors cursor-pointer"
+          >
+            <X size={13} className="text-[#525252]" />
+          </button>
+        )}
+      </div>
 
       <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-2">
         {loading ? (

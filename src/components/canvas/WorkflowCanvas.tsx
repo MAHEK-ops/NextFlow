@@ -17,6 +17,7 @@ import ReactFlow, {
 import NodeContextMenu from "./NodeContextMenu";
 import CanvasToolbar, { type ActiveTool } from "./CanvasToolbar";
 import KeyboardShortcutsModal from "./KeyboardShortcutsModal";
+import NodePickerPanel from "./NodePickerPanel";
 import { NODE_COLORS, type NodeType, type WorkflowNode, type WorkflowEdge } from "@/types/workflow";
 import { DEFAULT_NODE_DATA } from "@/lib/node-defaults";
 import { useWorkflowStore } from "@/store/workflow";
@@ -59,8 +60,9 @@ function Flow() {
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [showMinimap, setShowMinimap] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showNodePicker, setShowNodePicker] = useState(false);
 
-  useNodeShortcuts(showShortcuts, () => setShowShortcuts(false));
+  useNodeShortcuts(showShortcuts, () => setShowShortcuts(false), () => setShowNodePicker(true));
 
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
@@ -224,12 +226,24 @@ function Flow() {
         />
       )}
 
+      {showNodePicker && (
+        <>
+          <div
+            className="absolute inset-0 z-20"
+            onClick={() => setShowNodePicker(false)}
+          />
+          <NodePickerPanel onClose={() => setShowNodePicker(false)} />
+        </>
+      )}
+
       <CanvasToolbar
         activeTool={activeTool}
         setActiveTool={setActiveTool}
         showMinimap={showMinimap}
         setShowMinimap={setShowMinimap}
         onOpenShortcuts={() => setShowShortcuts(true)}
+        showNodePicker={showNodePicker}
+        onToggleNodePicker={() => setShowNodePicker((v) => !v)}
       />
 
       <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
@@ -239,7 +253,7 @@ function Flow() {
 
 export default function WorkflowCanvas() {
   return (
-    <main className="relative w-full h-full bg-[#0a0a0a]">
+    <main className="relative w-full h-full bg-[#0a0a0a] dark:bg-[#0a0a0a]">
       <Flow />
     </main>
   );

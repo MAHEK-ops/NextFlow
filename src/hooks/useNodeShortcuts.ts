@@ -15,7 +15,8 @@ const TYPE_MAP: Record<string, NodeType> = {
 
 export function useNodeShortcuts(
   showShortcuts: boolean,
-  onCloseShortcuts: () => void
+  onCloseShortcuts: () => void,
+  onOpenNodePicker: () => void
 ) {
   const { screenToFlowPosition } = useReactFlow();
   const addNode = useWorkflowStore((s) => s.addNode);
@@ -52,6 +53,12 @@ export function useNodeShortcuts(
         return;
       }
 
+      if (e.key === "n") {
+        e.preventDefault();
+        onOpenNodePicker();
+        return;
+      }
+
       const mappedType = TYPE_MAP[e.key];
       if (mappedType) {
         e.preventDefault();
@@ -60,5 +67,5 @@ export function useNodeShortcuts(
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [showShortcuts, onCloseShortcuts, addNodeAtCenter]);
+  }, [showShortcuts, onCloseShortcuts, onOpenNodePicker, addNodeAtCenter]);
 }

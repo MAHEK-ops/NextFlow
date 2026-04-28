@@ -6,11 +6,13 @@ import {
   Workflow,
   ChevronDown,
   Moon,
+  Sun,
   Gem,
-  Wand2,
-  LayoutGrid,
+  Hammer,
+  Image,
   Clock,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 type SaveState = "idle" | "saving" | "saved";
 
@@ -22,6 +24,7 @@ interface TopBarProps {
   onToggleSidebar: () => void;
   showVersionHistory: boolean;
   onToggleVersionHistory: () => void;
+  onOpenAssets: () => void;
 }
 
 export default function TopBar({
@@ -32,9 +35,11 @@ export default function TopBar({
   onToggleSidebar,
   showVersionHistory,
   onToggleVersionHistory,
+  onOpenAssets,
 }: TopBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -83,9 +88,10 @@ export default function TopBar({
       <div className="flex items-center gap-2">
         <button
           type="button"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#141414] border border-[#272727] text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors cursor-pointer"
         >
-          <Moon size={15} />
+          {theme === "dark" ? <Moon size={15} /> : <Sun size={15} />}
         </button>
 
         <button
@@ -100,7 +106,7 @@ export default function TopBar({
           type="button"
           className="h-8 px-3 flex items-center gap-1.5 rounded-lg bg-[#141414] border border-[#272727] text-sm text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors cursor-pointer"
         >
-          <Wand2 size={14} className="text-[#525252]" />
+          <Hammer size={14} className="text-[#525252]" />
           Turn workflow into app
         </button>
 
@@ -114,7 +120,7 @@ export default function TopBar({
               {showVersionHistory ? (
                 <Clock size={15} className="text-white" />
               ) : (
-                <LayoutGrid size={15} className="text-[#e5e5e5]" />
+                <Image size={15} className="text-[#e5e5e5]" />
               )}
             </button>
             <button
@@ -130,10 +136,14 @@ export default function TopBar({
             <div className="absolute top-10 right-0 z-50 bg-[#141414] border border-[#272727] rounded-xl p-1 shadow-xl min-w-[200px]">
               <button
                 type="button"
+                onClick={() => {
+                  onOpenAssets();
+                  setDropdownOpen(false);
+                }}
                 className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1f1f1f] cursor-pointer transition-colors"
               >
                 <div className="flex items-center">
-                  <LayoutGrid size={14} className="text-[#525252]" />
+                  <Image size={14} className="text-[#525252]" />
                   <span className="text-sm text-[#e5e5e5] ml-2">Assets</span>
                 </div>
                 <span className="text-xs text-[#525252] font-mono">⌥⌘A</span>

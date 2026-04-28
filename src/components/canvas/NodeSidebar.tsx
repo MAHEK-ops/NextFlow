@@ -1,7 +1,11 @@
 "use client";
 
-import { Type, Cpu, ImagePlus, VideoIcon, Crop, Film, type LucideIcon } from "lucide-react";
+import { useState } from "react";
+import { Type, Cpu, ImagePlus, VideoIcon, Crop, Film, LogIn, type LucideIcon } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { NODE_COLORS, type NodeType } from "@/types/workflow";
+import UserProfilePopup from "./UserProfilePopup";
 
 const NODE_DEFINITIONS: Array<{ type: NodeType; label: string; icon: LucideIcon }> = [
   { type: "text", label: "Text", icon: Type },
@@ -34,6 +38,48 @@ function NodeButton({ type, label, icon: Icon }: { type: NodeType; label: string
   );
 }
 
+function ProfileButton() {
+  const { user, isSignedIn } = useUser();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  const initial = (
+    user?.firstName?.[0] ??
+    user?.emailAddresses?.[0]?.emailAddress?.[0] ??
+    "U"
+  ).toUpperCase();
+
+  if (!isSignedIn) {
+    return (
+      <button
+        type="button"
+        onClick={() => router.push("/sign-in")}
+        className="w-8 h-8 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center cursor-pointer hover:border-[#3a3a3a] transition-colors"
+      >
+        <LogIn size={14} className="text-[#525252]" />
+      </button>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-8 h-8 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center text-xs text-[#e5e5e5] font-medium cursor-pointer hover:border-[#3a3a3a] transition-colors"
+      >
+        {initial}
+      </button>
+      {open && (
+        <UserProfilePopup
+          onClose={() => setOpen(false)}
+          userInitial={initial}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function NodeSidebar() {
   return (
     <aside className="w-[220px] flex-none flex flex-col bg-[#111111] border-r border-[#1f1f1f]">
@@ -45,6 +91,9 @@ export default function NodeSidebar() {
         {NODE_DEFINITIONS.map((def) => (
           <NodeButton key={def.type} {...def} />
         ))}
+      </div>
+      <div className="mt-auto pb-4 flex flex-col items-center">
+        <ProfileButton />
       </div>
     </aside>
   );

@@ -11,7 +11,7 @@ import TopBar from "./TopBar";
 import NodeSidebar from "./NodeSidebar";
 import WorkflowCanvas from "./WorkflowCanvas";
 import HistorySidebar from "./HistorySidebar";
-import VersionHistoryPanel from "./VersionHistoryPanel";
+import AssetsPanel from "./AssetsPanel";
 import CommandPalette from "./CommandPalette";
 
 interface WorkflowShellProps {
@@ -25,6 +25,7 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [showSidebar, setShowSidebar] = useState(true);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showAssetsPanel, setShowAssetsPanel] = useState(false);
 
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
@@ -177,17 +178,25 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
           onToggleSidebar={() => setShowSidebar((v) => !v)}
           showVersionHistory={showVersionHistory}
           onToggleVersionHistory={() => setShowVersionHistory((v) => !v)}
+          onOpenAssets={() => {
+            setShowAssetsPanel(true);
+          }}
         />
 
         <div className="flex-1 flex overflow-hidden">
           {showSidebar && <NodeSidebar />}
           <div className="relative flex-1 overflow-hidden">
             <WorkflowCanvas />
-            {showVersionHistory && (
-              <VersionHistoryPanel onClose={() => setShowVersionHistory(false)} />
+            {showAssetsPanel && (
+              <AssetsPanel onClose={() => setShowAssetsPanel(false)} />
             )}
           </div>
-          <HistorySidebar workflowId={workflowId} />
+          {showVersionHistory && (
+            <HistorySidebar
+              workflowId={workflowId}
+              onClose={() => setShowVersionHistory(false)}
+            />
+          )}
         </div>
 
         <input
