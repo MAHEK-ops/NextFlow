@@ -197,9 +197,6 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
             />
           </div>
           <SelectionToolbar workflowId={workflowId} />
-          {showAssetsPanel && (
-            <AssetsPanel onClose={() => setShowAssetsPanel(false)} />
-          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -214,6 +211,9 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
             onImport={handleTriggerImport}
           />
         </div>
+        {showAssetsPanel && (
+          <AssetsPanel onClose={() => setShowAssetsPanel(false)} />
+        )}
         {showVersionHistory && (
           <HistorySidebar
             workflowId={workflowId}

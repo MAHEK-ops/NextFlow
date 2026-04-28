@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { X } from "lucide-react";
 import { useWorkflowStore } from "@/store/workflow";
 
@@ -15,7 +16,7 @@ function AssetThumbnail({ url }: { url: string }) {
         e.dataTransfer.setData("assetUrl", url);
         e.dataTransfer.setData("nodeType", "upload-image");
       }}
-      className="relative aspect-video rounded-xl overflow-hidden border cursor-grab transition-colors group hover:border-[#3a3a3a]"
+      className="relative aspect-square rounded-xl overflow-hidden border cursor-grab transition-colors group hover:border-[#3a3a3a]"
       style={{ borderColor: "var(--toolbar-border)" }}
     >
       <img src={url} alt="" className="w-full h-full object-cover" />
@@ -25,11 +26,23 @@ function AssetThumbnail({ url }: { url: string }) {
 }
 
 export default function AssetsPanel({ onClose }: Props) {
-  const assetUrls = useWorkflowStore((s) => s.assetUrls);
+  const nodes = useWorkflowStore((s) => s.nodes);
+  const storedAssets = useWorkflowStore((s) => s.assetUrls);
+
+  const allAssets = useMemo(() => {
+    const urls: string[] = [];
+    nodes.forEach((node) => {
+      const d = node.data as unknown as Record<string, unknown>;
+      if (d.imageUrl && typeof d.imageUrl === "string") urls.push(d.imageUrl);
+      if (d.outputUrl && typeof d.outputUrl === "string") urls.push(d.outputUrl);
+      if (d.result && typeof d.result === "string" && d.result.startsWith("http")) urls.push(d.result);
+    });
+    return [...new Set([...storedAssets, ...urls])];
+  }, [nodes, storedAssets]);
 
   return (
-    <div
-      className="absolute top-0 right-0 h-full w-[200px] flex flex-col z-20 border-l"
+    <aside
+      className="w-[240px] flex-none flex flex-col h-full border-l"
       style={{ background: "var(--sidebar-bg)", borderColor: "var(--toolbar-border)" }}
     >
       <div className="h-12 flex items-center px-4 gap-2 border-b flex-none" style={{ borderColor: "var(--toolbar-border)" }}>
@@ -44,18 +57,18 @@ export default function AssetsPanel({ onClose }: Props) {
       </div>
 
       <div className="p-2 flex-1 overflow-y-auto">
-        {assetUrls.length === 0 ? (
+        {allAssets.length === 0 ? (
           <p className="text-xs text-center mt-8 px-4 leading-relaxed" style={{ color: "var(--text-muted)" }}>
             Uploaded images appear here
           </p>
         ) : (
-          <div className="flex flex-col gap-2">
-            {assetUrls.map((url, i) => (
+          <div className="grid grid-cols-2 gap-2">
+            {allAssets.map((url, i) => (
               <AssetThumbnail key={i} url={url} />
             ))}
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }
