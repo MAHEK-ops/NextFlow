@@ -40,25 +40,29 @@ function scopeLabel(scope: RunScope): string {
 
 function NodeRow({ exec, name }: { exec: NodeExecutionRecord; name: string }) {
   return (
-    <div className="px-3 py-2 border-t border-[#1a1a1a]">
-      <div className="flex items-center gap-2">
-        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${nodeDotClass(exec.status)}`} />
-        <span className="text-xs text-[#c5c5c5] flex-1 truncate">{name}</span>
-        <span className={`text-[10px] font-medium ${exec.status === "success" ? "text-[#4ade80]" : "text-[#f87171]"}`}>
-          {exec.status === "success" ? "Success" : "Failed"}
-        </span>
-        <span className="text-[10px] text-[#525252]">{exec.duration}ms</span>
+    <div className="relative mb-3 last:mb-0">
+      <div className={`absolute -left-[14px] top-1 w-2.5 h-2.5 rounded-full border-2 border-[#111111] ${nodeDotClass(exec.status)}`} />
+      <div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs text-[#c5c5c5] font-medium truncate">{name}</span>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className={`text-[10px] font-medium ${exec.status === "success" ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+              {exec.status === "success" ? "Success" : "Failed"}
+            </span>
+            <span className="text-[10px] text-[#525252]">{exec.duration}ms</span>
+          </div>
+        </div>
+        {exec.error && (
+          <p className="text-[10px] text-[#f87171] mt-1 leading-relaxed break-words">
+            {exec.error}
+          </p>
+        )}
+        {exec.status === "success" && exec.outputs && Object.keys(exec.outputs).length > 0 && (
+          <p className="text-[10px] text-[#525252] mt-0.5 truncate">
+            {JSON.stringify(exec.outputs).slice(0, 50)}
+          </p>
+        )}
       </div>
-      {exec.error && (
-        <p className="text-[10px] text-[#f87171] mt-1.5 pl-4 leading-relaxed break-words">
-          {exec.error}
-        </p>
-      )}
-      {exec.status === "success" && exec.outputs && Object.keys(exec.outputs).length > 0 && (
-        <p className="text-[10px] text-[#525252] mt-1 pl-4 truncate">
-          Output: {JSON.stringify(exec.outputs).slice(0, 60)}...
-        </p>
-      )}
     </div>
   );
 }
@@ -105,13 +109,14 @@ function RunCard({
           </p>
         )}
       </div>
-      {expanded && run.executions.map((exec) => (
-        <NodeRow
-          key={exec.id}
-          exec={exec}
-          name={nodeNameMap[exec.nodeId] ?? exec.nodeType}
-        />
-      ))}
+      {expanded && (
+        <div className="relative pl-6 pr-3 py-2">
+          <div className="absolute left-[18px] top-0 bottom-0 w-px bg-[#2a2a2a]" />
+          {run.executions.map((exec) => (
+            <NodeRow key={exec.id} exec={exec} name={nodeNameMap[exec.nodeId] ?? exec.nodeType} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { useWorkflowStore } from "@/store/workflow";
 import { DEFAULT_NODE_DATA } from "@/lib/node-defaults";
 import type { WorkflowNode } from "@/types/workflow";
 import { extractFrameTask } from "@/trigger/extract-frame-task";
-import SidebarProfile from "../dashboard/SidebarProfile";
+import SidebarFooter from "../dashboard/SidebarFooter";
 
 /* KREA ICONS */
 const ICONS = {
@@ -110,7 +110,7 @@ export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeS
   );
 
   return (
-    <aside className={`${collapsed ? "w-14" : "w-[240px]"} bg-black flex flex-col`}>
+    <aside className={`${collapsed ? "w-14" : "w-[240px]"} bg-black flex flex-col h-screen`}>
 
       {/* Toggle */}
       <div className="px-3 py-3">
@@ -137,62 +137,40 @@ export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeS
         </div>
       </div>
 
-      {/* SEARCH */}
-      {!collapsed && (
-        <div className="px-3 mt-4">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#2a2a2a]">
-            <Search size={14} className="text-[#6b6b6b]" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search nodes..."
-              className="bg-transparent text-sm text-white outline-none w-full"
-            />
-          </div>
-        </div>
-      )}
+      {/* SCROLLABLE CONTENT */}
+      <div className="flex-1 overflow-y-auto">
 
-      {/* QUICK ACCESS */}
-      {!collapsed && (
-        <p className="text-xs text-[#6b6b6b] px-4 mt-4">QUICK ACCESS</p>
-      )}
-
-      <div className="mt-2 space-y-1 px-2">
-        {filtered.map((def, i) => (
-          <NodeRow key={i} def={def} collapsed={collapsed} />
-        ))}
-      </div>
-
-      {/* PROFILE */}
-      <div className="mt-auto p-3 border-t border-[#1a1a1a] relative">
-        {/* Trigger */}
-        <button
-          onClick={() => setShowProfile(!showProfile)}
-          className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-[#151515] transition"
-        >
-          <div className="w-8 h-8 rounded-md bg-[#1a1a1a] flex items-center justify-center text-white text-sm font-medium">
-            {initial}
-          </div>
-
-          {!collapsed && (
-            <div className="flex flex-col text-left">
-              <p className="text-sm text-white leading-none">{username}</p>
-              <p className="text-xs text-[#6b6b6b]">Free</p>
-            </div>
-          )}
-        </button>
-
-        {/* Popup */}
-        {showProfile && (
-          <div className="absolute bottom-14 left-2 z-50">
-            <div className="bg-[#1a1a1a] rounded-xl shadow-xl border border-[#2a2a2a] min-w-[220px] overflow-hidden">
-
-              {/* ✅ REUSE dashboard profile component */}
-              <SidebarProfile collapsed={false} />
-
+        {/* SEARCH */}
+        {!collapsed && (
+          <div className="px-3 mt-4">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#2a2a2a]">
+              <Search size={14} className="text-[#6b6b6b]" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search nodes..."
+                className="bg-transparent text-sm text-white outline-none w-full"
+              />
             </div>
           </div>
         )}
+
+        {/* QUICK ACCESS */}
+        {!collapsed && (
+          <p className="text-xs text-[#6b6b6b] px-4 mt-4">QUICK ACCESS</p>
+        )}
+
+        <div className="mt-2 space-y-1 px-2">
+          {filtered.map((def, i) => (
+            <NodeRow key={i} def={def} collapsed={collapsed} />
+          ))}
+        </div>
+
+      </div>
+
+      {/* FOOTER (NOW FIXED AT BOTTOM) */}
+      <div className="p-2 border-t border-[#1a1a1a]">
+        <SidebarFooter collapsed={collapsed} />
       </div>
     </aside>
   );

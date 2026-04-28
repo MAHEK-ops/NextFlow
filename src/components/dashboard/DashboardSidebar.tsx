@@ -56,6 +56,7 @@ export default function DashboardSidebar() {
       className={`${collapsed ? "w-[72px]" : "w-[230px]"
         } transition-all duration-300 flex flex-col h-full border-r border-white/10 bg-[#0B0B0F]`}
     >
+
       {/* TOP TOGGLE */}
       <div className="flex items-center px-3 py-3">
         <button

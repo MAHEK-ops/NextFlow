@@ -1,11 +1,13 @@
-import { tasks } from "@trigger.dev/sdk/v3";
-import type { llmTask } from "@/trigger/llm-task";
+import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import type { LLMNodeData } from "@/types/workflow";
 
 export async function executeLlmNode(
   nodeData: LLMNodeData,
   inputs: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
+
   const systemPrompt =
     typeof inputs["system_prompt"] === "string"
       ? inputs["system_prompt"]
@@ -30,22 +32,42 @@ export async function executeLlmNode(
     throw new Error("LLM node requires at least one input: user message, system prompt, or an image");
   }
 
-  const result = await tasks.triggerAndWait<typeof llmTask>("llm-task", {
-    model: nodeData.model,
-    systemPrompt,
-    userMessage,
-    imageUrls,
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const modelName = nodeData.model || "gemini-2.0-flash";
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    ...(systemPrompt?.trim() ? { systemInstruction: systemPrompt } : {}),
   });
 
-  if (!result.ok) {
-    const errorMessage =
-      result.error instanceof Error
-        ? result.error.message
-        : typeof result.error === "string"
-        ? result.error
-        : "LLM task failed";
-    throw new Error(errorMessage);
+  const parts: Part[] = [];
+
+  if (userMessage.trim()) {
+    parts.push({ text: userMessage });
   }
 
-  return { output: result.output.result };
+  for (const url of imageUrls) {
+    if (url.startsWith("data:")) {
+      const commaIdx = url.indexOf(",");
+      const header = commaIdx !== -1 ? url.slice(0, commaIdx) : "";
+      const data = commaIdx !== -1 ? url.slice(commaIdx + 1) : url;
+      const mimeMatch = /^data:([^;,]+)/.exec(header);
+      const mimeType = mimeMatch !== null && mimeMatch[1] ? mimeMatch[1] : "image/jpeg";
+      parts.push({ inlineData: { mimeType, data } });
+    } else {
+      const response = await fetch(url);
+      const buffer = await response.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+      const mimeType = response.headers.get("content-type") ?? "image/jpeg";
+      parts.push({ inlineData: { data: base64, mimeType } });
+    }
+  }
+
+  if (parts.length === 0 && systemPrompt?.trim()) {
+    parts.push({ text: systemPrompt });
+  }
+
+  const result = await model.generateContent({ contents: [{ role: "user", parts }] });
+  const text = result.response.text();
+
+  return { output: text };
 }
