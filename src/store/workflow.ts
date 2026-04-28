@@ -98,12 +98,37 @@ export const useWorkflowStore = create<WorkflowStore>()(
 
     removeNode: (nodeId) =>
       set((state) => {
-        const snap = snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]);
+        const all = current(state.nodes) as WorkflowNode[];
+        const allEdges = current(state.edges) as WorkflowEdge[];
+
+        const snap = snapshot(all, allEdges);
         if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
         state.undoStack.push(snap);
         state.redoStack = [];
-        state.nodes = state.nodes.filter((n) => n.id !== nodeId);
-        state.edges = state.edges.filter((e) => e.source !== nodeId && e.target !== nodeId);
+
+        const target = all.find((n) => n.id === nodeId);
+
+        if (target?.type === "group") {
+          // detach children and restore their absolute positions before removing the group
+          const detached = all.map((n): WorkflowNode => {
+            if (n.parentId !== nodeId) return n;
+            const { parentId: _p, extent: _e, ...rest } = n;
+            return {
+              ...rest,
+              position: {
+                x: target.position.x + n.position.x,
+                y: target.position.y + n.position.y,
+              },
+            };
+          });
+          state.nodes = detached.filter((n) => n.id !== nodeId) as typeof state.nodes;
+        } else {
+          state.nodes = all.filter((n) => n.id !== nodeId) as typeof state.nodes;
+        }
+
+        state.edges = allEdges.filter(
+          (e) => e.source !== nodeId && e.target !== nodeId
+        ) as typeof state.edges;
       }),
 
     deleteNode: (nodeId) => get().removeNode(nodeId),

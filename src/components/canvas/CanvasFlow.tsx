@@ -61,6 +61,7 @@ export default function CanvasFlow() {
   const addNode = useWorkflowStore((s) => s.addNode);
   const addEdgeToStore = useWorkflowStore((s) => s.addEdge);
   const removeEdge = useWorkflowStore((s) => s.removeEdge);
+  const removeNode = useWorkflowStore((s) => s.removeNode);
   const activeTool = useWorkflowStore((s) => s.activeTool);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -84,8 +85,52 @@ export default function CanvasFlow() {
   });
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes(applyNodeChanges(changes, nodes)),
-    [setNodes, nodes]
+    (changes: NodeChange[]) => {
+      const otherChanges: NodeChange[] = [];
+      for (const change of changes) {
+        if (change.type === "remove") {
+          // route removes through store so group cleanup and undo tracking happen
+          removeNode(change.id);
+        } else {
+          otherChanges.push(change);
+        }
+      }
+      if (otherChanges.length > 0) {
+        setNodes(applyNodeChanges(otherChanges, useWorkflowStore.getState().nodes));
+      }
+    },
+    [setNodes, removeNode]
+  );
+
+  const onNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      const deletedGroupIds = deleted
+        .filter((n) => n.type === "group")
+        .map((n) => n.id);
+      if (deletedGroupIds.length === 0) return;
+
+      // safety net: detach any children that still reference a deleted group
+      const storeState = useWorkflowStore.getState();
+      const hasOrphans = storeState.nodes.some(
+        (n) => n.parentId && deletedGroupIds.includes(n.parentId)
+      );
+      if (!hasOrphans) return;
+
+      const cleaned = storeState.nodes.map((n): WorkflowNode => {
+        if (!n.parentId || !deletedGroupIds.includes(n.parentId)) return n;
+        const group = deleted.find((g) => g.id === n.parentId);
+        const { parentId: _p, extent: _e, ...rest } = n;
+        return {
+          ...rest,
+          position: {
+            x: (group?.position.x ?? 0) + n.position.x,
+            y: (group?.position.y ?? 0) + n.position.y,
+          },
+        };
+      });
+      storeState.setNodes(cleaned.filter((n) => !deleted.some((d) => d.id === n.id)));
+    },
+    []
   );
 
   const onEdgesChange = useCallback(
@@ -188,6 +233,7 @@ export default function CanvasFlow() {
       <ReactFlow
         nodes={styledNodes} edges={edges}
         onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
+        onNodesDelete={onNodesDelete}
         onDrop={onDrop} onDragOver={onDragOver}
         onConnect={onConnect} onConnectStart={onConnectStart} onConnectEnd={onConnectEnd}
         onNodeContextMenu={onNodeContextMenu} onEdgeClick={onEdgeClick}

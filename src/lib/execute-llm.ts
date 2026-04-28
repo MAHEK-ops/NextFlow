@@ -1,5 +1,24 @@
-import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import type { LLMNodeData } from "@/types/workflow";
+
+const MODEL_ALIASES: Record<string, string> = {
+  "gemini-1.5-flash-latest": "gemini-1.5-flash",
+  "gemini-1.5-pro-latest": "gemini-1.5-pro",
+  "gemini-2.0-flash-exp": "gemini-2.0-flash",
+};
+
+function sanitizeModel(model: string): string {
+  return MODEL_ALIASES[model] ?? model;
+}
+
+type TextPart = { text: string };
+type InlineDataPart = { inlineData: { mimeType: string; data: string } };
+type Part = TextPart | InlineDataPart;
+
+type GeminiResponse = {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> };
+  }>;
+};
 
 export async function executeLlmNode(
   nodeData: LLMNodeData,
@@ -38,24 +57,16 @@ export async function executeLlmNode(
     throw new Error("LLM node requires at least one input: a message, system prompt, or image");
   }
 
-  const MODEL_ALIASES: Record<string, string> = {
-    "gemini-1.5-flash": "gemini-1.5-flash-latest",
-    "gemini-1.5-pro": "gemini-1.5-pro-latest",
-    "gemini-2.0-flash-exp": "gemini-2.0-flash",
-  };
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const rawModel = nodeData.model || "gemini-2.0-flash";
-  const modelName = MODEL_ALIASES[rawModel] ?? rawModel;
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    ...(systemPrompt?.trim() ? { systemInstruction: systemPrompt } : {}),
-  });
+  const modelName = sanitizeModel(nodeData.model || "gemini-2.0-flash");
 
   const parts: Part[] = [];
 
-  if (userMessage.trim()) {
-    parts.push({ text: userMessage });
+  const combinedText = [systemPrompt?.trim(), userMessage.trim()]
+    .filter(Boolean)
+    .join("\n\n");
+
+  if (combinedText) {
+    parts.push({ text: combinedText });
   }
 
   for (const url of imageUrls) {
@@ -75,12 +86,25 @@ export async function executeLlmNode(
     }
   }
 
-  if (parts.length === 0 && systemPrompt?.trim()) {
-    parts.push({ text: systemPrompt });
+  const body: Record<string, unknown> = {
+    contents: [{ role: "user", parts }],
+  };
+
+  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Gemini API error ${res.status}: ${err}`);
   }
 
-  const result = await model.generateContent({ contents: [{ role: "user", parts }] });
-  const text = result.response.text();
+  const responseData = (await res.json()) as GeminiResponse;
+  const text = responseData.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
   return { output: text };
 }
