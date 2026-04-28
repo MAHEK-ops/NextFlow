@@ -1,7 +1,4 @@
-import ffmpeg, { type FfprobeData } from "fluent-ffmpeg";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import sharp from "sharp";
 import type { CropImageNodeData } from "@/types/workflow";
 
 function parseInputNumber(value: unknown, fallback: number): number {
@@ -13,49 +10,14 @@ function parseInputNumber(value: unknown, fallback: number): number {
   return fallback;
 }
 
-function getImageDimensions(filePath: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, data: FfprobeData) => {
-      if (err) {
-        reject(err instanceof Error ? err : new Error(String(err)));
-        return;
-      }
-      const stream = data.streams.find((s) => s.codec_type === "video");
-      if (!stream || !stream.width || !stream.height) {
-        reject(new Error("Could not determine image dimensions"));
-        return;
-      }
-      resolve({ width: stream.width, height: stream.height });
-    });
-  });
-}
-
-function runFfmpegCrop(
-  inputPath: string,
-  outputPath: string,
-  x: number,
-  y: number,
-  cropWidth: number,
-  cropHeight: number
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
-      .videoFilter(`crop=${cropWidth}:${cropHeight}:${x}:${y}`)
-      .output(outputPath)
-      .on("end", () => resolve())
-      .on("error", (err: Error) => reject(err))
-      .run();
-  });
-}
-
-async function urlToBuffer(url: string): Promise<Buffer> {
+async function fetchImageBuffer(url: string): Promise<Buffer> {
   if (url.startsWith("data:")) {
     const commaIdx = url.indexOf(",");
     const data = commaIdx !== -1 ? url.slice(commaIdx + 1) : url;
     return Buffer.from(data, "base64");
   }
-  const response = await fetch(url);
-  return Buffer.from(await response.arrayBuffer());
+  const res = await fetch(url);
+  return Buffer.from(await res.arrayBuffer());
 }
 
 export async function executeCropNode(
@@ -72,29 +34,22 @@ export async function executeCropNode(
   const widthPercent = parseInputNumber(inputs["width_percent"], nodeData.widthPercent);
   const heightPercent = parseInputNumber(inputs["height_percent"], nodeData.heightPercent);
 
-  const tmpDir = os.tmpdir();
-  const inputPath = path.join(tmpDir, `input-${Date.now()}.jpg`);
-  const outputPath = path.join(tmpDir, `output-${Date.now()}.jpg`);
+  const imageBuffer = await fetchImageBuffer(imageUrl);
+  const image = sharp(imageBuffer);
+  const metadata = await image.metadata();
+  const width = metadata.width ?? 100;
+  const height = metadata.height ?? 100;
 
-  try {
-    const buffer = await urlToBuffer(imageUrl);
-    fs.writeFileSync(inputPath, buffer);
+  const left = Math.round((xPercent / 100) * width);
+  const top = Math.round((yPercent / 100) * height);
+  const cropWidth = Math.max(1, Math.round((widthPercent / 100) * width));
+  const cropHeight = Math.max(1, Math.round((heightPercent / 100) * height));
 
-    const { width, height } = await getImageDimensions(inputPath);
+  const croppedBuffer = await image
+    .extract({ left, top, width: cropWidth, height: cropHeight })
+    .jpeg()
+    .toBuffer();
 
-    const x = Math.round((xPercent / 100) * width);
-    const y = Math.round((yPercent / 100) * height);
-    const cropWidth = Math.round((widthPercent / 100) * width);
-    const cropHeight = Math.round((heightPercent / 100) * height);
-
-    await runFfmpegCrop(inputPath, outputPath, x, y, cropWidth, cropHeight);
-
-    const outputBuffer = fs.readFileSync(outputPath);
-    const base64 = outputBuffer.toString("base64");
-
-    return { output: `data:image/jpeg;base64,${base64}` };
-  } finally {
-    if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-    if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-  }
+  const base64 = croppedBuffer.toString("base64");
+  return { output: `data:image/jpeg;base64,${base64}` };
 }

@@ -1,82 +1,55 @@
 import { task } from "@trigger.dev/sdk/v3";
-import ffmpeg, { type FfprobeData } from "fluent-ffmpeg";
+import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import os from "os";
 import path from "path";
 
-function getVideoDuration(filePath: string): Promise<number> {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, data: FfprobeData) => {
-      if (err) {
-        reject(err instanceof Error ? err : new Error(String(err)));
-        return;
-      }
-      const duration = data.format?.duration;
-      if (typeof duration !== "number") {
-        reject(new Error("Could not determine video duration"));
-        return;
-      }
-      resolve(duration);
-    });
-  });
+interface ExtractFrameInput {
+  videoUrl: string;
+  timestamp: string;
 }
 
-function extractFrame(
-  inputPath: string,
-  outputPath: string,
-  seekSeconds: number
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
-      .seekInput(seekSeconds)
-      .frames(1)
-      .output(outputPath)
-      .on("end", () => resolve())
-      .on("error", (err: Error) => reject(err))
-      .run();
-  });
-}
-
-function parseTimestamp(timestamp: string, durationSeconds: number): number {
+function parseTimestamp(timestamp: string): number {
   if (timestamp.endsWith("%")) {
-    const percent = parseFloat(timestamp) / 100;
-    return percent * durationSeconds;
+    return 0;
   }
   return parseFloat(timestamp) || 0;
 }
 
 export const extractFrameTask = task({
-  id: "extract-frame-task",
-  run: async (payload: {
-    videoUrl: string;
-    timestamp: string;
-  }) => {
-    const tmpDir = os.tmpdir();
-    const inputPath = path.join(tmpDir, `input-${Date.now()}.mp4`);
-    const outputPath = path.join(tmpDir, `frame-${Date.now()}.jpg`);
+  id: "extract-frame",
+  retry: { maxAttempts: 1 },
+  run: async (payload: ExtractFrameInput) => {
+    let videoBuffer: Buffer;
+    if (payload.videoUrl.startsWith("data:")) {
+      const commaIdx = payload.videoUrl.indexOf(",");
+      const data = commaIdx !== -1 ? payload.videoUrl.slice(commaIdx + 1) : payload.videoUrl;
+      videoBuffer = Buffer.from(data, "base64");
+    } else {
+      const res = await fetch(payload.videoUrl);
+      videoBuffer = Buffer.from(await res.arrayBuffer());
+    }
+
+    const tmpVideo = path.join(os.tmpdir(), `video-${Date.now()}.mp4`);
+    const tmpFrame = path.join(os.tmpdir(), `frame-${Date.now()}.jpg`);
+    fs.writeFileSync(tmpVideo, videoBuffer);
 
     try {
-      const response = await fetch(payload.videoUrl);
-      const buffer = await response.arrayBuffer();
-      fs.writeFileSync(inputPath, Buffer.from(buffer));
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(tmpVideo)
+          .seekInput(parseTimestamp(payload.timestamp))
+          .frames(1)
+          .output(tmpFrame)
+          .on("end", () => resolve())
+          .on("error", (err: Error) => reject(err))
+          .run();
+      });
 
-      const duration = await getVideoDuration(inputPath);
-      const seekSeconds = parseTimestamp(payload.timestamp, duration);
-
-      await extractFrame(inputPath, outputPath, seekSeconds);
-
-      const outputBuffer = fs.readFileSync(outputPath);
-      const base64 = outputBuffer.toString("base64");
-      const outputUrl = `data:image/jpeg;base64,${base64}`;
-
-      return { outputUrl };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Extract frame task failed";
-      console.error("Extract frame task failed:", message);
-      throw new Error(message);
+      const frameBuffer = fs.readFileSync(tmpFrame);
+      return { output: `data:image/jpeg;base64,${frameBuffer.toString("base64")}` };
     } finally {
-      if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      if (fs.existsSync(tmpVideo)) fs.unlinkSync(tmpVideo);
+      if (fs.existsSync(tmpFrame)) fs.unlinkSync(tmpFrame);
     }
   },
 });

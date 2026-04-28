@@ -45,20 +45,11 @@ export async function executeLlmNode(
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim().length > 0);
   const hasImages = imageUrls.length > 0;
 
-  // eslint-disable-next-line no-console
-  console.log("[llm] inputs received:", JSON.stringify({
-    keys: Object.keys(inputs),
-    hasUserMessage,
-    hasSystemPrompt,
-    hasImages,
-  }));
-
   if (!hasUserMessage && !hasSystemPrompt && !hasImages) {
     throw new Error("LLM node requires at least one input: a message, system prompt, or image");
   }
 
   const modelName = sanitizeModel(nodeData.model || "gemini-2.0-flash");
-
   const parts: Part[] = [];
 
   const combinedText = [systemPrompt?.trim(), userMessage.trim()]
