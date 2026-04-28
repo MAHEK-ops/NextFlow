@@ -42,7 +42,8 @@ export default function TitlePill({
       <button
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-1.5 h-9 px-3 bg-[#141414]/90 backdrop-blur-sm border border-[#272727] rounded-2xl hover:bg-[#1a1a1a]/90 transition-colors"
+        className="flex items-center gap-1.5 h-9 px-3 rounded-2xl transition-colors hover:bg-[var(--input-bg)] border"
+        style={{ background: "var(--topbar-bg)", borderColor: "var(--toolbar-border)" }}
       >
         <div className="w-5 h-5 rounded-md bg-[#3b5bdb] flex items-center justify-center flex-none">
           <Workflow size={12} className="text-white" />

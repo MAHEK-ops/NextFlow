@@ -5,29 +5,35 @@
 @tailwind utilities;
 
 :root {
-  --canvas-bg: #f0f0f0;
-  --sidebar-bg: #ffffff;
+  --canvas-bg: #ebebeb;
+  --canvas-dot: #cccccc;
+  --sidebar-bg: #f5f5f5;
   --node-bg: #ffffff;
   --node-border: #e0e0e0;
   --toolbar-bg: #ffffff;
   --toolbar-border: #e0e0e0;
   --text-primary: #111111;
-  --text-muted: #888888;
-  --topbar-bg: #ffffff;
-  --topbar-border: #e5e5e5;
+  --text-muted: #666666;
+  --topbar-bg: #f5f5f5;
+  --topbar-border: #e0e0e0;
+  --input-bg: #f0f0f0;
+  --input-border: #d5d5d5;
 }
 
 .dark {
-  --canvas-bg: #0a0a0a;
-  --sidebar-bg: #0f0f0f;
-  --node-bg: #111111;
+  --canvas-bg: #141414;
+  --canvas-dot: #2a2a2a;
+  --sidebar-bg: #0a0a0a;
+  --node-bg: #1a1a1a;
   --node-border: #2a2a2a;
-  --toolbar-bg: #141414;
+  --toolbar-bg: #111111;
   --toolbar-border: #272727;
   --text-primary: #e5e5e5;
-  --text-muted: #525252;
+  --text-muted: #888888;
   --topbar-bg: #0a0a0a;
   --topbar-border: #1a1a1a;
+  --input-bg: #1a1a1a;
+  --input-border: #2a2a2a;
 }
 
 @layer base {
@@ -77,8 +83,21 @@
   }
 }
 
+.icon-filled {
+  fill: currentColor;
+  stroke: none;
+}
+
 .react-flow__background {
   background-color: var(--canvas-bg);
+}
+
+.react-flow__background pattern circle {
+  fill: var(--canvas-dot);
+}
+
+.react-flow__background pattern rect {
+  fill: var(--canvas-dot);
 }
 
 .react-flow__edge-path {
@@ -101,8 +120,8 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid #272727;
-  background: #1a1a1a;
+  border: 2px solid var(--toolbar-border);
+  background: var(--input-bg);
   transition: background 0.15s, border-color 0.15s;
 }
 
@@ -123,8 +142,8 @@
 }
 
 .react-flow__minimap {
-  background: #111111;
-  border: 1px solid #272727;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--toolbar-border);
   border-radius: 8px;
 }
 
@@ -135,14 +154,14 @@
 }
 
 .react-flow__controls-button {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  color: #a3a3a3;
-  fill: #a3a3a3;
+  background: var(--input-bg);
+  border: 1px solid var(--node-border);
+  color: var(--text-muted);
+  fill: var(--text-muted);
 }
 
 .react-flow__controls-button:hover {
-  background: #252525;
+  background: var(--toolbar-border);
 }
 
 .node-executing {

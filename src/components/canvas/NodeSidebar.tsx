@@ -4,17 +4,9 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
-  Home,
-  Layers,
-  FolderOpen,
-  Search,
-  Type,
-  Sparkles,
-  Image as ImageIcon,
-  Video as VideoIcon,
-  Crop,
-  Film,
-  type LucideIcon,
+  Home, Layers, FolderOpen, Search, Type, Sparkles,
+  Image as ImageIcon, Video as VideoIcon, Crop, Film,
+  PanelLeft, type LucideIcon,
 } from "lucide-react";
 import { useReactFlow } from "reactflow";
 import UserProfilePopup from "./UserProfilePopup";
@@ -42,9 +34,10 @@ interface NodeRowProps {
   type: NodeType;
   label: string;
   icon: LucideIcon;
+  collapsed: boolean;
 }
 
-function NodeRow({ type, label, icon: Icon }: NodeRowProps) {
+function NodeRow({ type, label, icon: Icon, collapsed }: NodeRowProps) {
   const color = NODE_COLORS[type];
   const { screenToFlowPosition } = useReactFlow();
   const addNode = useWorkflowStore((s) => s.addNode);
@@ -55,49 +48,35 @@ function NodeRow({ type, label, icon: Icon }: NodeRowProps) {
   }
 
   const handleClick = useCallback(() => {
-    const position = screenToFlowPosition({
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    });
-    const newNode: WorkflowNode = {
-      id: crypto.randomUUID(),
-      type,
-      position,
-      data: DEFAULT_NODE_DATA[type],
-    };
+    const position = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    const newNode: WorkflowNode = { id: crypto.randomUUID(), type, position, data: DEFAULT_NODE_DATA[type] };
     addNode(newNode);
-  }, [screenToFlowPosition, addNode]);
+  }, [screenToFlowPosition, addNode, type]);
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      draggable
-      onDragStart={onDragStart}
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") handleClick();
-      }}
-      className="flex items-center gap-2.5 px-3 py-2 rounded-xl mx-1 cursor-pointer hover:bg-[#1a1a1a] transition-colors group"
+      role="button" tabIndex={0} draggable
+      onDragStart={onDragStart} onClick={handleClick}
+      onKeyDown={(e) => { if (e.key === "Enter") handleClick(); }}
+      className={`flex items-center gap-2.5 py-2 rounded-xl mx-1 cursor-pointer transition-colors group hover:bg-[var(--input-bg)] ${collapsed ? "justify-center px-1" : "px-3"}`}
     >
-      <div
-        className="w-7 h-7 rounded-lg flex-none flex items-center justify-center"
-        style={{ background: color }}
-      >
+      <div className="w-7 h-7 rounded-lg flex-none flex items-center justify-center" style={{ background: color }}>
         <Icon size={13} className="text-white" />
       </div>
-      <span className="text-sm text-[#c5c5c5] group-hover:text-[#e5e5e5] transition-colors truncate">
-        {label}
-      </span>
+      {!collapsed && (
+        <span className="text-sm truncate transition-colors text-[var(--text-muted)] group-hover:text-[var(--text-primary)]">{label}</span>
+      )}
     </div>
   );
 }
 
 interface NodeSidebarProps {
   onOpenAssets?: () => void;
+  onToggle: () => void;
+  collapsed: boolean;
 }
 
-export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
+export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeSidebarProps) {
   const [search, setSearch] = useState("");
   const [showProfile, setShowProfile] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -111,63 +90,70 @@ export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
     : "U";
   const username = mounted ? (user?.username ?? user?.firstName ?? "User") : "User";
 
-  const navBase =
-    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full text-left transition-colors";
-  const activeNav = `${navBase} bg-[#1a1a1a] text-white font-medium`;
-  const inactiveNav = `${navBase} text-[#888888] hover:text-white hover:bg-[#1a1a1a]`;
+  const navBase = `flex items-center ${collapsed ? "justify-center px-1" : "gap-3 px-3"} py-2.5 rounded-xl text-sm w-full text-left transition-colors`;
+  const activeNav = `${navBase} bg-[var(--input-bg)] text-[var(--text-primary)] font-medium`;
+  const inactiveNav = `${navBase} text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--input-bg)]`;
 
-  const filtered = NODE_DEFINITIONS.filter((n) =>
-    n.label.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = NODE_DEFINITIONS.filter((n) => n.label.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <aside className="w-[220px] flex-none flex flex-col bg-[#0f0f0f] border-r border-[#1a1a1a] h-full overflow-hidden transition-[width] duration-200">
-      <div className="px-2 py-3 flex flex-col gap-0.5 border-b border-[#1a1a1a]">
+    <aside
+      className={`${collapsed ? "w-12" : "w-[200px]"} flex-none flex flex-col h-full border-r overflow-hidden transition-[width] duration-200`}
+      style={{ background: "var(--sidebar-bg)", borderColor: "var(--toolbar-border)" }}
+    >
+      <div className="flex items-center px-2 py-2 border-b" style={{ borderColor: "var(--toolbar-border)" }}>
         <button
-          type="button"
-          className={inactiveNav}
-          onClick={() => router.push("/dashboard")}
+          type="button" onClick={onToggle}
+          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors hover:bg-[var(--input-bg)]"
+          style={{ color: "var(--text-muted)" }}
         >
+          <PanelLeft size={16} />
+        </button>
+      </div>
+
+      <div className="px-2 py-2 flex flex-col gap-0.5 border-b" style={{ borderColor: "var(--toolbar-border)" }}>
+        <button type="button" className={inactiveNav} onClick={() => router.push("/dashboard")}>
           <div className="w-8 h-8 rounded-xl bg-[#1c1c1e] flex items-center justify-center flex-none">
             <Home size={16} className="text-white" />
           </div>
-          Home
+          {!collapsed && "Home"}
         </button>
         <button type="button" className={activeNav}>
           <div className="w-8 h-8 rounded-xl bg-[#3b5bdb] flex items-center justify-center flex-none">
             <Layers size={16} className="text-white" />
           </div>
-          Node Editor
+          {!collapsed && "Node Editor"}
         </button>
         <button type="button" className={inactiveNav} onClick={onOpenAssets}>
           <div className="w-8 h-8 rounded-xl bg-[#1e40af] flex items-center justify-center flex-none">
             <FolderOpen size={16} className="text-white" />
           </div>
-          Assets
+          {!collapsed && "Assets"}
         </button>
       </div>
 
-      <div className="px-3 py-2.5 border-b border-[#1a1a1a]">
-        <div className="flex items-center gap-2 bg-[#1a1a1a] border border-[#272727] rounded-xl px-3 h-8">
-          <Search size={13} className="text-[#525252] flex-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search nodes..."
-            className="flex-1 bg-transparent text-sm text-[#e5e5e5] placeholder-[#525252] outline-none min-w-0"
-          />
+      {!collapsed && (
+        <div className="px-3 py-2.5 border-b" style={{ borderColor: "var(--toolbar-border)" }}>
+          <div className="flex items-center gap-2 rounded-xl px-3 h-8 border" style={{ background: "var(--input-bg)", borderColor: "var(--input-border)" }}>
+            <Search size={13} className="flex-none" style={{ color: "var(--text-muted)" }} />
+            <input
+              type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search nodes..."
+              className="flex-1 bg-transparent text-sm outline-none min-w-0"
+              style={{ color: "var(--text-primary)" }}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex-1 overflow-y-auto py-2">
-        <p className="text-[10px] font-semibold text-[#525252] uppercase tracking-wider px-4 pb-1.5">
-          Quick Access
-        </p>
+        {!collapsed && (
+          <p className="text-[10px] font-semibold uppercase tracking-wider px-4 pb-1.5" style={{ color: "var(--text-muted)" }}>
+            Quick Access
+          </p>
+        )}
         <div className="flex flex-col">
-          {filtered.map((def) => (
-            <NodeRow key={def.type} {...def} />
-          ))}
+          {filtered.map((def) => <NodeRow key={def.type} {...def} collapsed={collapsed} />)}
         </div>
       </div>
 
@@ -176,19 +162,19 @@ export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
           <button
             type="button"
             onClick={() => setShowProfile(!showProfile)}
-            className="flex items-center gap-2.5 px-3 py-2.5 mx-1 rounded-xl hover:bg-[#1a1a1a] transition-colors cursor-pointer w-full"
+            className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5"} px-3 py-2.5 mx-1 rounded-xl hover:bg-[var(--input-bg)] transition-colors cursor-pointer w-full`}
           >
             <div className="w-9 h-9 rounded-xl bg-[#1c1c1e] border border-[#272727] flex items-center justify-center text-sm text-white font-medium flex-none">
               {initial}
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm text-[#e5e5e5] font-medium truncate max-w-[120px]">{username}</span>
-              <span className="text-xs text-[#525252]">Free</span>
-            </div>
+            {!collapsed && (
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate max-w-[120px]" style={{ color: "var(--text-primary)" }}>{username}</span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Free</span>
+              </div>
+            )}
           </button>
-          {showProfile && (
-            <UserProfilePopup onClose={() => setShowProfile(false)} userInitial={initial} />
-          )}
+          {showProfile && <UserProfilePopup onClose={() => setShowProfile(false)} userInitial={initial} />}
         </div>
       </div>
     </aside>

@@ -74,37 +74,37 @@ export default function KeyboardShortcutsModal({ open, onClose }: Props) {
     <div
       ref={overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
-      }}
+      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
-      <div className="bg-[#111111] border border-[#272727] rounded-2xl p-8 w-[520px] max-h-[85vh] overflow-y-auto shadow-2xl relative">
+      <div className="rounded-2xl p-8 w-[520px] max-h-[85vh] overflow-y-auto shadow-2xl relative border" style={{ background: "var(--toolbar-bg)", borderColor: "var(--toolbar-border)" }}>
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-6 right-6 w-8 h-8 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center hover:bg-[#272727] transition-colors cursor-pointer"
+          className="absolute top-6 right-6 w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer border hover:bg-[var(--input-bg)]"
+          style={{ background: "var(--input-bg)", borderColor: "var(--toolbar-border)" }}
         >
-          <X size={14} className="text-[#737373]" />
+          <X size={14} style={{ color: "var(--text-muted)" }} />
         </button>
 
-        <h2 className="text-xl font-semibold text-white mb-1">Keyboard Shortcuts</h2>
-        <p className="text-sm text-[#525252] mb-8">
+        <h2 className="text-xl font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Keyboard Shortcuts</h2>
+        <p className="text-sm mb-8" style={{ color: "var(--text-muted)" }}>
           Quickly navigate and create with these shortcuts.
         </p>
 
         {SECTIONS.map((section, i) => (
           <div key={section.title}>
-            <h3 className={`text-sm font-semibold text-white mb-3${i > 0 ? " mt-6" : ""}`}>
+            <h3 className={`text-sm font-semibold mb-3${i > 0 ? " mt-6" : ""}`} style={{ color: "var(--text-primary)" }}>
               {section.title}
             </h3>
             {section.shortcuts.map((row) => (
               <div key={row.action} className="flex justify-between items-center py-1.5">
-                <span className="text-sm text-[#737373]">{row.action}</span>
+                <span className="text-sm" style={{ color: "var(--text-muted)" }}>{row.action}</span>
                 <div className="flex items-center gap-1">
                   {row.keys.map((key) => (
                     <span
                       key={key}
-                      className="px-2 py-0.5 bg-[#1a1a1a] border border-[#2a2a2a] rounded-md text-xs text-[#e5e5e5] font-mono"
+                      className="px-2 py-0.5 rounded-md text-xs font-mono border"
+                      style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                     >
                       {key}
                     </span>

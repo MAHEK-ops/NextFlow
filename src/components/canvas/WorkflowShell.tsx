@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { ReactFlowProvider } from "reactflow";
-import { PanelLeft } from "lucide-react";
 import { useWorkflowStore } from "@/store/workflow";
 import type { WorkflowNode, WorkflowEdge } from "@/types/workflow";
 import { exportWorkflowAsJson, parseWorkflowJson } from "@/lib/workflow-io";
@@ -173,19 +172,14 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
   return (
     <ReactFlowProvider>
       <div className="h-screen w-screen overflow-hidden flex">
-        {showSidebar && (
-          <NodeSidebar onOpenAssets={() => setShowAssetsPanel(true)} />
-        )}
+        <NodeSidebar
+          collapsed={!showSidebar}
+          onToggle={() => setShowSidebar((v) => !v)}
+          onOpenAssets={() => setShowAssetsPanel(true)}
+        />
         <div className="relative flex-1 overflow-hidden">
           <WorkflowCanvas />
-          <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowSidebar((v) => !v)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#141414]/90 backdrop-blur-sm border border-[#272727] text-[#525252] hover:text-[#e5e5e5] hover:bg-[#1a1a1a]/90 transition-colors"
-            >
-              <PanelLeft size={16} />
-            </button>
+          <div className="absolute top-4 left-4 z-20">
             <TitlePill
               workflowName={workflowName}
               onWorkflowNameChange={setWorkflowName}

@@ -8,7 +8,7 @@ import { useWorkflowStore } from "@/store/workflow";
 import NodeWrapper from "./NodeWrapper";
 
 const HC = HANDLE_COLORS;
-const HS = { width: 12, height: 12, border: "2px solid #1a1a1a" };
+const HS = { width: 12, height: 12, border: "2px solid var(--node-bg)" };
 
 function ExtractFrameNode({ id, data, selected }: NodeProps<ExtractFrameNodeData>) {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
@@ -17,19 +17,20 @@ function ExtractFrameNode({ id, data, selected }: NodeProps<ExtractFrameNodeData
     <NodeWrapper nodeId={id} label={data.label} selected={selected}>
       <div className="relative">
         <Handle type="target" position={Position.Left} id="video_url" data-handletype="video"
-          style={{ ...HS, background: HC.video, borderColor: "#1a1a1a", top: 18 }} />
+          style={{ ...HS, background: HC.video, borderColor: "var(--node-bg)", top: 18 }} />
         <Handle type="target" position={Position.Left} id="timestamp" data-handletype="text"
-          style={{ ...HS, background: HC.text, borderColor: "#1a1a1a", top: 54 }} />
+          style={{ ...HS, background: HC.text, borderColor: "var(--node-bg)", top: 54 }} />
 
         <div className="px-3 py-2.5 flex flex-col">
-          <div className="h-9 flex items-center"><span className="text-xs text-[#888888] pl-2">Video</span></div>
-          <div className="h-9 flex items-center"><span className="text-xs text-[#888888] pl-2">Timestamp</span></div>
+          <div className="h-9 flex items-center"><span className="text-xs pl-2" style={{ color: "var(--text-muted)" }}>Video</span></div>
+          <div className="h-9 flex items-center"><span className="text-xs pl-2" style={{ color: "var(--text-muted)" }}>Timestamp</span></div>
         </div>
 
         <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <span className="text-xs text-[#525252]">Timestamp (s or %)</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>Timestamp (s or %)</span>
           <input type="text"
-            className="nodrag w-full bg-[#1a1a1a] text-[#e5e5e5] text-sm border border-[#272727] rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#7c3aed]"
+            className="nodrag w-full text-sm rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border placeholder:text-[var(--text-muted)]"
+            style={{ background: "var(--input-bg)", color: "var(--text-primary)", borderColor: "var(--input-border)" }}
             placeholder="0" value={data.timestamp}
             onChange={(e) => updateNodeData(id, { timestamp: e.target.value })} />
         </div>
@@ -43,7 +44,7 @@ function ExtractFrameNode({ id, data, selected }: NodeProps<ExtractFrameNodeData
       </div>
 
       <Handle type="source" position={Position.Right} id="output" data-handletype="image"
-        style={{ background: HC.image, borderColor: "#1a1a1a", width: 12, height: 12, border: "2px solid #1a1a1a" }} />
+        style={{ background: HC.image, borderColor: "var(--node-bg)", width: 12, height: 12, border: "2px solid var(--node-bg)" }} />
     </NodeWrapper>
   );
 }

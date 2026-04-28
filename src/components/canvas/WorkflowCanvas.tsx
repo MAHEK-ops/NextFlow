@@ -195,25 +195,28 @@ function Flow() {
         snapToGrid={false}
         style={{ background: "var(--canvas-bg)" }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#2a2a2a" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} />
         {showMinimap && (
           <MiniMap
             position="bottom-right"
             nodeColor={getNodeColor}
-            style={{ background: "#111111", marginBottom: "48px" }}
-            maskColor="rgba(0,0,0,0.6)"
+            style={{ background: "var(--toolbar-bg)", marginBottom: "48px" }}
+            maskColor="rgba(0,0,0,0.4)"
           />
         )}
       </ReactFlow>
 
       {nodes.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <p className="text-sm font-medium text-[#3a3a3a] select-none">Add a node</p>
-          <p className="text-xs text-[#2a2a2a] select-none mt-1 flex items-center">
+          <p className="text-sm font-medium select-none" style={{ color: "var(--text-muted)" }}>Add a node</p>
+          <p className="text-xs select-none mt-1 flex items-center" style={{ color: "var(--text-muted)", opacity: 0.7 }}>
             Double click, right click, or press
-            <span className="px-1.5 py-0.5 bg-[#1a1a1a] border border-[#272727] rounded text-xs text-[#525252] font-mono inline-flex items-center ml-1">
+            <kbd
+              className="ml-1 px-1.5 py-0.5 rounded text-xs font-mono border inline-flex items-center"
+              style={{ borderColor: "var(--toolbar-border)", background: "var(--input-bg)", color: "var(--text-muted)" }}
+            >
               N
-            </span>
+            </kbd>
           </p>
         </div>
       )}

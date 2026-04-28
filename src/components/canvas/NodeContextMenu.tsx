@@ -14,13 +14,17 @@ interface Props {
   onClose: () => void;
 }
 
-const badge = "px-1.5 py-0.5 bg-[#1f1f1f] border border-[#2a2a2a] rounded text-xs text-[#888888] font-mono";
-const item = "w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#1a1a1a] cursor-pointer transition-colors";
+const badgeCls = "px-1.5 py-0.5 rounded text-xs font-mono border";
+const item = "w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[var(--input-bg)] cursor-pointer transition-colors";
 
 function Badges({ keys }: { keys: string[] }) {
   return (
     <div className="flex items-center gap-1">
-      {keys.map((k) => <span key={k} className={badge}>{k}</span>)}
+      {keys.map((k) => (
+        <span key={k} className={badgeCls} style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-muted)" }}>
+          {k}
+        </span>
+      ))}
     </div>
   );
 }
@@ -74,34 +78,34 @@ export default function NodeContextMenu({ nodeId, x, y, onClose }: Props) {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="fixed z-50 bg-[#111111] border border-[#272727] rounded-2xl p-1.5 shadow-2xl w-[220px]" style={{ left: x, top: y }}>
+      <div className="fixed z-50 rounded-2xl p-1.5 shadow-2xl w-[220px] border" style={{ left: x, top: y, background: "var(--toolbar-bg)", borderColor: "var(--toolbar-border)" }}>
         <button type="button" onClick={() => void handleRunNode()} className={item}>
-          <div className="flex items-center"><Play size={15} className="text-[#888888]" /><span className="text-sm text-[#e5e5e5] ml-2.5">Run Node</span></div>
+          <div className="flex items-center"><Play size={15} style={{ color: "var(--text-muted)" }} /><span className="text-sm ml-2.5" style={{ color: "var(--text-primary)" }}>Run Node</span></div>
           <Badges keys={["Cmd", "Enter"]} />
         </button>
         <button type="button" className={item}>
-          <div className="flex items-center"><AlignLeft size={15} className="text-[#888888]" /><span className="text-sm text-[#e5e5e5] ml-2.5">Open Text Editor</span></div>
+          <div className="flex items-center"><AlignLeft size={15} style={{ color: "var(--text-muted)" }} /><span className="text-sm ml-2.5" style={{ color: "var(--text-primary)" }}>Open Text Editor</span></div>
         </button>
 
-        <div className="h-px bg-[#1f1f1f] my-1" />
+        <div className="h-px my-1" style={{ background: "var(--toolbar-border)" }} />
 
         <button type="button" className={item}>
-          <div className="flex items-center"><Copy size={15} className="text-[#888888]" /><span className="text-sm text-[#e5e5e5] ml-2.5">Copy</span></div>
+          <div className="flex items-center"><Copy size={15} style={{ color: "var(--text-muted)" }} /><span className="text-sm ml-2.5" style={{ color: "var(--text-primary)" }}>Copy</span></div>
           <Badges keys={["Cmd", "C"]} />
         </button>
         <button type="button" onClick={handleDuplicate} className={item}>
-          <div className="flex items-center"><CopyPlus size={15} className="text-[#888888]" /><span className="text-sm text-[#e5e5e5] ml-2.5">Duplicate</span></div>
+          <div className="flex items-center"><CopyPlus size={15} style={{ color: "var(--text-muted)" }} /><span className="text-sm ml-2.5" style={{ color: "var(--text-primary)" }}>Duplicate</span></div>
           <Badges keys={["Cmd", "D"]} />
         </button>
         <button type="button" className={item}>
-          <div className="flex items-center"><Pencil size={15} className="text-[#888888]" /><span className="text-sm text-[#e5e5e5] ml-2.5">Rename</span></div>
+          <div className="flex items-center"><Pencil size={15} style={{ color: "var(--text-muted)" }} /><span className="text-sm ml-2.5" style={{ color: "var(--text-primary)" }}>Rename</span></div>
           <Badges keys={["R"]} />
         </button>
         <button type="button" className={item}>
-          <div className="flex items-center"><EyeOff size={15} className="text-[#888888]" /><span className="text-sm text-[#e5e5e5] ml-2.5">Disable Node</span></div>
+          <div className="flex items-center"><EyeOff size={15} style={{ color: "var(--text-muted)" }} /><span className="text-sm ml-2.5" style={{ color: "var(--text-primary)" }}>Disable Node</span></div>
         </button>
 
-        <div className="h-px bg-[#1f1f1f] my-1" />
+        <div className="h-px my-1" style={{ background: "var(--toolbar-border)" }} />
 
         <button type="button" onClick={handleDelete} className={item}>
           <div className="flex items-center"><Trash2 size={15} className="text-red-500" /><span className="text-sm text-red-500 ml-2.5">Delete</span></div>

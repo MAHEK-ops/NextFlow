@@ -90,20 +90,18 @@ export default function NodePickerPanel({ onClose }: Props) {
   })).filter((cat) => cat.items.length > 0);
 
   return (
-    <div
-      ref={panelRef}
-      className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30"
-    >
-      <div className="bg-[#111111] border border-[#272727] rounded-2xl overflow-hidden shadow-2xl w-[280px] max-h-[480px] flex flex-col">
+    <div ref={panelRef} className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30">
+      <div className="rounded-2xl overflow-hidden shadow-2xl w-[280px] max-h-[480px] flex flex-col border" style={{ background: "var(--toolbar-bg)", borderColor: "var(--toolbar-border)" }}>
         <div className="px-3 pt-3 pb-2">
-          <div className="flex items-center gap-2 bg-[#1a1a1a] border border-[#272727] rounded-xl px-3 h-9">
-            <Search size={14} className="text-[#525252] flex-none" />
+          <div className="flex items-center gap-2 rounded-xl px-3 h-9 border" style={{ background: "var(--input-bg)", borderColor: "var(--input-border)" }}>
+            <Search size={14} className="flex-none" style={{ color: "var(--text-muted)" }} />
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search nodes or models..."
-              className="bg-transparent text-sm text-[#e5e5e5] placeholder-[#525252] outline-none flex-1"
+              className="bg-transparent text-sm outline-none flex-1"
+              style={{ color: "var(--text-primary)" }}
             />
           </div>
         </div>
@@ -112,25 +110,25 @@ export default function NodePickerPanel({ onClose }: Props) {
           {filtered.map((cat) => (
             <div key={cat.label}>
               <div className="flex items-center gap-2 px-3 py-2 mt-1">
-                <cat.icon size={14} className="text-[#525252]" />
-                <span className="text-xs text-[#525252] font-medium">{cat.label}</span>
+                <cat.icon size={14} style={{ color: "var(--text-muted)" }} />
+                <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{cat.label}</span>
               </div>
               {cat.items.map((item) => (
                 <button
                   key={item.type}
                   type="button"
                   onClick={() => addNodeAtCenter(item.type)}
-                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer transition-colors mx-1 rounded-xl"
-                  style={{ width: "calc(100% - 8px)" }}
+                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-[var(--input-bg)] cursor-pointer transition-colors mx-1 rounded-xl"
+                  style={{ width: "calc(100% - 8px)", color: "var(--text-primary)" }}
                 >
-                  <span className="text-sm text-[#e5e5e5]">{item.label}</span>
-                  <ChevronRight size={14} className="text-[#3a3a3a]" />
+                  <span className="text-sm">{item.label}</span>
+                  <ChevronRight size={14} style={{ color: "var(--text-muted)" }} />
                 </button>
               ))}
             </div>
           ))}
           {filtered.length === 0 && (
-            <p className="text-xs text-[#525252] text-center py-6">No results</p>
+            <p className="text-xs text-center py-6" style={{ color: "var(--text-muted)" }}>No results</p>
           )}
         </div>
       </div>

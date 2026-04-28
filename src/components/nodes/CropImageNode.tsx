@@ -8,7 +8,7 @@ import { useWorkflowStore } from "@/store/workflow";
 import NodeWrapper from "./NodeWrapper";
 
 const HC = HANDLE_COLORS;
-const HS = { width: 12, height: 12, border: "2px solid #1a1a1a" };
+const HS = { width: 12, height: 12, border: "2px solid var(--node-bg)" };
 
 const INPUTS = [
   { id: "image_url", label: "Image", color: HC.image },
@@ -29,13 +29,13 @@ function CropImageNode({ id, data, selected }: NodeProps<CropImageNodeData>) {
       <div className="relative">
         {INPUTS.map(({ id: hid, color }, i) => (
           <Handle key={hid} type="target" position={Position.Left} id={hid} data-handletype={hid === "image_url" ? "image" : "text"}
-            style={{ ...HS, background: color, borderColor: "#1a1a1a", top: 18 + i * 36 }} />
+            style={{ ...HS, background: color, borderColor: "var(--node-bg)", top: 18 + i * 36 }} />
         ))}
 
         <div className="px-3 py-2.5 flex flex-col">
           {INPUTS.map(({ id: hid, label }) => (
             <div key={hid} className="h-9 flex items-center">
-              <span className="text-xs text-[#888888] pl-2">{label}</span>
+              <span className="text-xs pl-2" style={{ color: "var(--text-muted)" }}>{label}</span>
             </div>
           ))}
         </div>
@@ -50,9 +50,10 @@ function CropImageNode({ id, data, selected }: NodeProps<CropImageNodeData>) {
             ] as const
           ).map(([lbl, field, value, handleId]) => (
             <div key={field} className="flex items-center justify-between">
-              <span className="text-xs text-[#525252]">{lbl}</span>
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>{lbl}</span>
               <input type="number"
-                className={`nodrag bg-[#1a1a1a] text-[#e5e5e5] text-sm border border-[#272727] rounded-lg p-1 w-16 text-right focus:outline-none focus:ring-1 focus:ring-[#7c3aed] ${isConnected(handleId) ? "opacity-40 pointer-events-none" : ""}`}
+                className={`nodrag text-sm rounded-lg p-1 w-16 text-right focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border ${isConnected(handleId) ? "opacity-40 pointer-events-none" : ""}`}
+                style={{ background: "var(--input-bg)", color: "var(--text-primary)", borderColor: "var(--input-border)" }}
                 min={0} max={100} step={1} value={value}
                 onChange={(e) => updateNodeData(id, { [field]: Number(e.target.value) })} />
             </div>
@@ -68,7 +69,7 @@ function CropImageNode({ id, data, selected }: NodeProps<CropImageNodeData>) {
       </div>
 
       <Handle type="source" position={Position.Right} id="output" data-handletype="image"
-        style={{ background: HC.image, borderColor: "#1a1a1a", width: 12, height: 12, border: "2px solid #1a1a1a" }} />
+        style={{ background: HC.image, borderColor: "var(--node-bg)", width: 12, height: 12, border: "2px solid var(--node-bg)" }} />
     </NodeWrapper>
   );
 }

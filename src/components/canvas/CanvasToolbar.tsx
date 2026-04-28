@@ -26,10 +26,10 @@ interface Props {
   onToggleNodePicker: () => void;
 }
 
-const iconBtn = "w-10 h-10 flex items-center justify-center rounded-xl text-[#888888] hover:text-white hover:bg-[#1a1a1a] transition-colors cursor-pointer";
-const activeIconBtn = "w-10 h-10 flex items-center justify-center rounded-xl bg-[#2a2a2a] text-white transition-colors cursor-pointer";
-const borderedBtn = "w-9 h-9 flex items-center justify-center rounded-xl border border-[#272727] bg-[#141414] text-[#888888] hover:text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors cursor-pointer";
-const shortcutsBtn = "h-9 px-3 flex items-center gap-1.5 rounded-xl border border-[#272727] bg-[#141414] text-[#888888] hover:text-[#e5e5e5] hover:bg-[#1a1a1a] text-xs transition-colors cursor-pointer";
+const iconBtn = "w-10 h-10 flex items-center justify-center rounded-xl text-[#999999] hover:text-[#cccccc] hover:bg-[var(--input-bg)] transition-colors cursor-pointer";
+const activeIconBtn = "w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--input-bg)] text-white transition-colors cursor-pointer";
+const borderedBtn = "w-9 h-9 flex items-center justify-center rounded-xl border border-[#333333] bg-[var(--toolbar-bg)] text-[#aaaaaa] hover:text-[#e5e5e5] hover:bg-[var(--input-bg)] transition-colors cursor-pointer";
+const shortcutsBtn = "h-9 px-3 flex items-center gap-1.5 rounded-xl border border-[#333333] bg-[var(--toolbar-bg)] text-[#aaaaaa] hover:text-[#e5e5e5] hover:bg-[var(--input-bg)] text-xs transition-colors cursor-pointer";
 
 function Tip({ label, keys }: { label: string; keys?: string[] }) {
   return (
@@ -67,7 +67,7 @@ export default function CanvasToolbar({
       </div>
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-        <div className="bg-[#141414] border border-[#272727] rounded-2xl px-3 py-2 flex items-center gap-1 shadow-xl">
+        <div className="border rounded-2xl px-3 py-2 flex items-center gap-1 shadow-xl" style={{ background: "var(--toolbar-bg)", borderColor: "var(--toolbar-border)" }}>
           <div className="relative group">
             <button type="button" onClick={onToggleNodePicker} className={showNodePicker ? activeIconBtn : iconBtn}>
               <Plus size={18} />

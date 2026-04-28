@@ -60,19 +60,21 @@ function UploadVideoNode({ id, data, selected }: NodeProps<UploadVideoNodeData>)
         {data.videoUrl ? (
           <div>
             <video src={data.videoUrl} controls className="w-full max-h-[120px] rounded-xl object-cover" />
-            <p className="mt-1.5 text-xs text-[#525252] truncate">{data.fileName}</p>
+            <p className="mt-1.5 text-xs truncate" style={{ color: "var(--text-muted)" }}>{data.fileName}</p>
             <button type="button" onClick={openPicker} disabled={uploading}
-              className="nodrag mt-2 w-full text-xs text-[#525252] hover:text-[#e5e5e5] transition-colors disabled:opacity-50">
+              className="nodrag mt-2 w-full text-xs transition-colors disabled:opacity-50 hover:text-[var(--text-primary)]"
+              style={{ color: "var(--text-muted)" }}>
               {uploading ? "Uploading..." : "Replace video"}
             </button>
           </div>
         ) : (
-          <div className="border border-dashed border-[#272727] rounded-xl p-4 flex flex-col items-center gap-2">
+          <div className="border border-dashed rounded-xl p-4 flex flex-col items-center gap-2" style={{ borderColor: "var(--input-border)" }}>
             {uploading ? (
-              <Loader2 size={18} className="text-[#525252] animate-spin" />
+              <Loader2 size={18} className="animate-spin" style={{ color: "var(--text-muted)" }} />
             ) : (
               <button type="button" onClick={openPicker}
-                className="nodrag text-sm text-[#525252] hover:text-[#e5e5e5] transition-colors">
+                className="nodrag text-sm transition-colors hover:text-[var(--text-primary)]"
+                style={{ color: "var(--text-muted)" }}>
                 Upload video
               </button>
             )}
@@ -83,7 +85,7 @@ function UploadVideoNode({ id, data, selected }: NodeProps<UploadVideoNodeData>)
       <input ref={fileInputRef} type="file" accept="video/mp4,video/quicktime,video/webm,video/x-m4v"
         className="hidden" onChange={handleFileChange} />
       <Handle type="source" position={Position.Right} id="output" data-handletype="video"
-        style={{ background: HC.video, borderColor: "#1a1a1a", width: 12, height: 12, border: "2px solid #1a1a1a" }} />
+        style={{ background: HC.video, borderColor: "var(--node-bg)", width: 12, height: 12, border: "2px solid var(--node-bg)" }} />
     </NodeWrapper>
   );
 }

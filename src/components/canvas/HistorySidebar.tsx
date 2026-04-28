@@ -46,15 +46,15 @@ function StatusBadge({ status }: { status: string }) {
 
 function NodeEntry({ exec }: { exec: NodeExecutionRecord }) {
   return (
-    <div className="ml-2 pl-2 border-l border-[#2a2a2a] py-1.5">
+    <div className="ml-2 pl-2 border-l py-1.5" style={{ borderColor: "var(--toolbar-border)" }}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] text-[#a3a3a3] truncate">{exec.nodeType}</span>
+        <span className="text-[11px] truncate" style={{ color: "var(--text-primary)" }}>{exec.nodeType}</span>
         <StatusBadge status={exec.status} />
       </div>
       <div className="flex items-center gap-2 mt-0.5">
-        <span className="text-[11px] text-[#525252]">{formatDuration(exec.duration)}</span>
+        <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{formatDuration(exec.duration)}</span>
         {exec.error && (
-          <span className="text-[11px] text-[#f87171] truncate">{exec.error}</span>
+          <span className="text-[11px] text-red-400 truncate">{exec.error}</span>
         )}
       </div>
     </div>
@@ -76,25 +76,25 @@ function RunEntry({
   const timestamp = formatDistanceToNow(new Date(run.createdAt), { addSuffix: true });
 
   return (
-    <div className="w-full bg-[#1a1a1a] rounded-md overflow-hidden">
+    <div className="w-full rounded-md overflow-hidden" style={{ background: "var(--input-bg)" }}>
       <button
         type="button"
         onClick={onToggle}
-        className="w-full p-3 text-left hover:bg-[#1f1f1f] transition-colors"
+        className="w-full p-3 text-left hover:bg-[var(--toolbar-border)] transition-colors"
       >
         <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center gap-1.5">
-            <Chevron className="w-3 h-3 text-[#525252] flex-none" />
-            <span className="text-sm text-white font-medium">#{index + 1}</span>
+            <Chevron className="w-3 h-3 flex-none" style={{ color: "var(--text-muted)" }} />
+            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>#{index + 1}</span>
           </div>
           <StatusBadge status={run.status} />
         </div>
         <div className="flex items-center justify-between pl-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#525252]">{formatDuration(run.duration)}</span>
-            <span className="text-xs text-[#525252]">{SCOPE_LABELS[run.scope]}</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{formatDuration(run.duration)}</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{SCOPE_LABELS[run.scope]}</span>
           </div>
-          <span className="text-xs text-[#525252]">{timestamp}</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{timestamp}</span>
         </div>
       </button>
 
@@ -146,16 +146,16 @@ export default function HistorySidebar({ workflowId, onClose }: HistorySidebarPr
   }
 
   return (
-    <aside className="w-[260px] flex-none flex flex-col border-l" style={{ background: "var(--sidebar-bg)", borderColor: "var(--topbar-border)" }}>
-      <div className="h-12 flex items-center px-4 border-b border-[#1f1f1f]">
-        <span className="text-sm font-medium text-[#e5e5e5] flex-1">Workflow History</span>
+    <aside className="w-[260px] flex-none flex flex-col border-l" style={{ background: "var(--sidebar-bg)", borderColor: "var(--toolbar-border)" }}>
+      <div className="h-12 flex items-center px-4 border-b" style={{ borderColor: "var(--toolbar-border)" }}>
+        <span className="text-sm font-medium flex-1" style={{ color: "var(--text-primary)" }}>Workflow History</span>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-[#1a1a1a] transition-colors cursor-pointer"
+            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-[var(--input-bg)] transition-colors cursor-pointer"
           >
-            <X size={13} className="text-[#525252]" />
+            <X size={13} style={{ color: "var(--text-muted)" }} />
           </button>
         )}
       </div>
@@ -163,11 +163,11 @@ export default function HistorySidebar({ workflowId, onClose }: HistorySidebarPr
       <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-2">
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-4 h-4 text-[#525252] animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" style={{ color: "var(--text-muted)" }} />
           </div>
         ) : runs.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm text-[#525252]">No runs yet</p>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>No runs yet</p>
           </div>
         ) : (
           runs.map((run, i) => (

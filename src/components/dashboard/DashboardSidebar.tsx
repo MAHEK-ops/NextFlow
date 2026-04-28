@@ -16,12 +16,12 @@ import SidebarToggle from "./SidebarToggle";
 
 export default function DashboardSidebar() {
   const row = "flex items-center gap-3 px-3 py-2.5 rounded-xl mx-1 text-sm transition-colors w-full text-left";
-  const inactiveRow = `${row} text-[#888888] hover:text-white hover:bg-[#1a1a1a]`;
-  const activeRow = `${row} bg-[#1a1a1a] text-white font-medium`;
-  const toolRow = `${row} text-[#888888]`;
+  const inactiveRow = `${row} text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--input-bg)]`;
+  const activeRow = `${row} bg-[var(--input-bg)] text-[var(--text-primary)] font-medium`;
+  const toolRow = `${row} text-[var(--text-muted)]`;
 
   return (
-    <aside className="w-[220px] flex-none flex flex-col h-full bg-[#0a0a0a] border-r border-[#1a1a1a]">
+    <aside className="w-[220px] flex-none flex flex-col h-full border-r" style={{ background: "var(--sidebar-bg)", borderColor: "var(--toolbar-border)" }}>
       <SidebarToggle />
 
       <div className="flex-1 overflow-y-auto">
@@ -58,7 +58,7 @@ export default function DashboardSidebar() {
           </div>
         </nav>
 
-        <p className="text-xs text-[#3a3a3a] font-medium px-4 mt-4 mb-2">Tools</p>
+        <p className="text-xs font-medium px-4 mt-4 mb-2" style={{ color: "var(--text-muted)" }}>Tools</p>
         <nav className="flex flex-col gap-0.5">
           <div className={toolRow}>
             <div className="w-8 h-8 rounded-xl bg-[#0c4a6e] flex items-center justify-center flex-shrink-0">
@@ -96,16 +96,16 @@ export default function DashboardSidebar() {
             </div>
             Edit
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 mx-1 text-sm text-[#3a3a3a]">
-            <MoreHorizontal size={15} className="text-[#3a3a3a]" />
+          <div className="flex items-center gap-2 px-3 py-2 mx-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            <MoreHorizontal size={15} style={{ color: "var(--text-muted)" }} />
             More
           </div>
         </nav>
 
-        <p className="text-xs text-[#3a3a3a] font-medium px-4 mt-4 mb-2">Sessions</p>
+        <p className="text-xs font-medium px-4 mt-4 mb-2" style={{ color: "var(--text-muted)" }}>Sessions</p>
       </div>
 
-      <div className="border-t border-[#1a1a1a] p-2">
+      <div className="border-t p-2" style={{ borderColor: "var(--toolbar-border)" }}>
         <SidebarProfile />
       </div>
     </aside>
