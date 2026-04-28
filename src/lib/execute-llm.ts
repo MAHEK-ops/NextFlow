@@ -38,8 +38,15 @@ export async function executeLlmNode(
     throw new Error("LLM node requires at least one input: a message, system prompt, or image");
   }
 
+  const MODEL_ALIASES: Record<string, string> = {
+    "gemini-1.5-flash": "gemini-1.5-flash-latest",
+    "gemini-1.5-pro": "gemini-1.5-pro-latest",
+    "gemini-2.0-flash-exp": "gemini-2.0-flash",
+  };
+
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelName = nodeData.model || "gemini-2.0-flash";
+  const rawModel = nodeData.model || "gemini-2.0-flash";
+  const modelName = MODEL_ALIASES[rawModel] ?? rawModel;
   const model = genAI.getGenerativeModel({
     model: modelName,
     ...(systemPrompt?.trim() ? { systemInstruction: systemPrompt } : {}),

@@ -29,7 +29,8 @@ function ExtractFrameNode({ id, data, selected }: NodeProps<ExtractFrameNodeData
         <div className="px-3 pb-3 flex flex-col gap-1.5">
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>Timestamp (s or %)</span>
           <input type="text"
-            className="nodrag w-full text-sm rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border placeholder:text-[var(--text-muted)]"
+            draggable={false}
+            className="nodrag nopan w-full text-sm rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border placeholder:text-[var(--text-muted)]"
             style={{ background: "var(--input-bg)", color: "var(--text-primary)", borderColor: "var(--input-border)" }}
             placeholder="0" value={data.timestamp}
             onChange={(e) => updateNodeData(id, { timestamp: e.target.value })} />

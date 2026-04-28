@@ -16,7 +16,8 @@ function TextNode({ id, data, selected }: NodeProps<TextNodeData>) {
     <NodeWrapper nodeId={id} label={data.label} selected={selected}>
       <div className="px-3 py-2.5">
         <textarea
-          className="nodrag w-full min-h-[80px] resize-y text-sm focus:border-[#7c3aed] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] rounded-xl p-2 border placeholder:text-[var(--text-muted)]"
+          draggable={false}
+          className="nodrag nopan w-full min-h-[80px] resize-y text-sm focus:border-[#7c3aed] focus:outline-none focus:ring-1 focus:ring-[#7c3aed] rounded-xl p-2 border placeholder:text-[var(--text-muted)]"
           style={{ background: "var(--input-bg)", color: "var(--text-primary)", borderColor: "var(--input-border)" }}
           placeholder="Enter text..."
           value={data.text}

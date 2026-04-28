@@ -33,7 +33,8 @@ function LLMNode({ id, data, selected }: NodeProps<LLMNodeData>) {
 
         <div className="px-3 pb-3 flex flex-col gap-2">
           <select
-            className="nodrag w-full text-sm rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border"
+            draggable={false}
+            className="nodrag nopan w-full text-sm rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border"
             style={{ background: "var(--input-bg)", color: "var(--text-primary)", borderColor: "var(--input-border)" }}
             value={data.model}
             onChange={(e) => updateNodeData(id, { model: e.target.value })}

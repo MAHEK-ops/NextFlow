@@ -5,6 +5,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   MiniMap,
+  SelectionMode,
   useReactFlow,
   applyNodeChanges,
   applyEdgeChanges,
@@ -195,7 +196,12 @@ export default function CanvasFlow() {
         fitView={false} defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         connectionLineStyle={{ stroke: "#7c3aed", strokeWidth: 2 }}
         defaultEdgeOptions={{ animated: true, style: { stroke: "#7c3aed", strokeWidth: 2 }, type: "smoothstep" }}
-        panOnDrag={activeTool === "pan"} selectionOnDrag={activeTool === "select"}
+        panOnDrag={activeTool === "pan" ? true : [1, 2]}
+        selectionOnDrag={activeTool === "select"}
+        selectionMode={SelectionMode.Partial}
+        selectNodesOnDrag={false}
+        nodesDraggable={true}
+        nodeDragThreshold={1}
         zoomOnScroll snapToGrid={false} style={{ background: "var(--canvas-bg)" }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1.5} color="var(--canvas-dot-color)" />

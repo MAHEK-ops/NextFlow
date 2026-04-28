@@ -52,7 +52,8 @@ function CropImageNode({ id, data, selected }: NodeProps<CropImageNodeData>) {
             <div key={field} className="flex items-center justify-between">
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>{lbl}</span>
               <input type="number"
-                className={`nodrag text-sm rounded-lg p-1 w-16 text-right focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border ${isConnected(handleId) ? "opacity-40 pointer-events-none" : ""}`}
+                draggable={false}
+                className={`nodrag nopan text-sm rounded-lg p-1 w-16 text-right focus:outline-none focus:ring-1 focus:ring-[#7c3aed] border ${isConnected(handleId) ? "opacity-40 pointer-events-none" : ""}`}
                 style={{ background: "var(--input-bg)", color: "var(--text-primary)", borderColor: "var(--input-border)" }}
                 min={0} max={100} step={1} value={value}
                 onChange={(e) => updateNodeData(id, { [field]: Number(e.target.value) })} />
