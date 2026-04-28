@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2, Copy, Pencil, Download, Maximize2 } from "lucide-react";
 import Uppy from "@uppy/core";
 import Transloadit, { type Result as TransloaditResult } from "@uppy/transloadit";
 import { HANDLE_COLORS } from "@/lib/node-defaults";
@@ -14,8 +14,58 @@ const HC = HANDLE_COLORS;
 const TRANSLOADIT_KEY = process.env.NEXT_PUBLIC_TRANSLOADIT_KEY ?? "";
 type UppyInstance = InstanceType<typeof Uppy>;
 
+function ImageActionBar({ id, imageUrl }: { id: string; imageUrl: string }) {
+  const deleteNode = useWorkflowStore((s) => s.deleteNode);
+
+  const actions = [
+    {
+      icon: Trash2,
+      label: "Delete",
+      cls: "hover:text-red-400",
+      onClick: () => deleteNode(id),
+    },
+    { icon: Copy, label: "Copy", cls: "", onClick: () => undefined },
+    { icon: Pencil, label: "Edit", cls: "", onClick: () => undefined },
+    {
+      icon: Download,
+      label: "Download",
+      cls: "",
+      onClick: () => {
+        const a = document.createElement("a");
+        a.href = imageUrl;
+        a.download = "image";
+        a.click();
+      },
+    },
+    { icon: Maximize2, label: "Expand", cls: "", onClick: () => undefined },
+  ];
+
+  return (
+    <div className="absolute -top-10 left-0 right-0 flex justify-center pointer-events-auto z-10">
+      <div
+        className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg border"
+        style={{ background: "var(--toolbar-bg)", borderColor: "var(--toolbar-border)" }}
+      >
+        {actions.map(({ icon: Icon, label, onClick, cls }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={onClick}
+            title={label}
+            className={`w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--input-bg)] transition-colors ${cls}`}
+            style={{ color: "var(--text-muted)" }}
+          >
+            <Icon size={13} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function UploadImageNode({ id, data, selected }: NodeProps<UploadImageNodeData>) {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
+  const addAssetUrl = useWorkflowStore((s) => s.addAssetUrl);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,13 +82,15 @@ function UploadImageNode({ id, data, selected }: NodeProps<UploadImageNodeData>)
     });
     uppy.on("upload", () => { setUploading(true); setError(null); });
     uppy.on("transloadit:result", (_s: string, result: TransloaditResult) => {
-      updateNodeData(id, { imageUrl: result.ssl_url ?? result.url, fileName: result.name });
+      const url = result.ssl_url ?? result.url;
+      updateNodeData(id, { imageUrl: url, fileName: result.name });
+      addAssetUrl(url);
     });
     uppy.on("transloadit:complete", () => setUploading(false));
     uppy.on("upload-error", (_f, err: Error) => { setUploading(false); setError(err.message); });
     uppyRef.current = uppy;
     return () => { uppy.close(); };
-  }, [id, updateNodeData]);
+  }, [id, updateNodeData, addAssetUrl]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,8 +106,12 @@ function UploadImageNode({ id, data, selected }: NodeProps<UploadImageNodeData>)
 
   const openPicker = useCallback(() => fileInputRef.current?.click(), []);
 
+  const overlay = selected && data.imageUrl
+    ? <ImageActionBar id={id} imageUrl={data.imageUrl} />
+    : undefined;
+
   return (
-    <NodeWrapper nodeId={id} label={data.label} selected={selected}>
+    <NodeWrapper nodeId={id} label={data.label} selected={selected} overlay={overlay}>
       <div className="px-3 py-2.5">
         {data.imageUrl ? (
           <div>

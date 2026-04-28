@@ -10,10 +10,12 @@ interface SelectionToolbarProps {
 
 export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) {
   const nodes = useWorkflowStore((s) => s.nodes);
-  const selectedCount = nodes.filter((n) => n.selected).length;
+  const groupSelectedNodes = useWorkflowStore((s) => s.groupSelectedNodes);
   const { handleRun } = useWorkflowRun(workflowId);
 
-  if (selectedCount === 0) return null;
+  const selected = nodes.filter((n) => n.selected);
+  if (selected.length === 0) return null;
+  if (selected.length === 1 && selected[0]?.type === "group") return null;
 
   return (
     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-[#141414]/90 backdrop-blur-sm border border-[#272727] rounded-2xl px-2 py-1.5 shadow-xl">
@@ -27,6 +29,7 @@ export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) 
       </button>
       <button
         type="button"
+        onClick={groupSelectedNodes}
         className="flex items-center gap-1.5 h-8 px-3 bg-[#1a1a1a] border border-[#2a2a2a] hover:bg-[#222222] rounded-full text-sm text-[#e5e5e5] transition-colors"
       >
         <Braces size={13} />

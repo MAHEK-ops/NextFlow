@@ -14,11 +14,7 @@ import {
 } from "lucide-react";
 import { useWorkflowStore } from "@/store/workflow";
 
-export type ActiveTool = "select" | "pan";
-
 interface Props {
-  activeTool: ActiveTool;
-  setActiveTool: (t: ActiveTool) => void;
   showMinimap: boolean;
   setShowMinimap: (v: boolean) => void;
   onOpenShortcuts: () => void;
@@ -45,11 +41,12 @@ function Tip({ label, keys }: { label: string; keys?: string[] }) {
 }
 
 export default function CanvasToolbar({
-  activeTool, setActiveTool, showMinimap, setShowMinimap,
-  onOpenShortcuts, showNodePicker, onToggleNodePicker,
+  showMinimap, setShowMinimap, onOpenShortcuts, showNodePicker, onToggleNodePicker,
 }: Props) {
   const undo = useWorkflowStore((s) => s.undo);
   const redo = useWorkflowStore((s) => s.redo);
+  const activeTool = useWorkflowStore((s) => s.activeTool);
+  const setActiveTool = useWorkflowStore((s) => s.setActiveTool);
 
   return (
     <>
@@ -87,7 +84,9 @@ export default function CanvasToolbar({
             <Tip label="Pan" keys={["Space", "Drag"]} />
           </div>
           <div className="relative group">
-            <button type="button" className={iconBtn}><Scissors size={18} /></button>
+            <button type="button" onClick={() => setActiveTool("scissors")} className={activeTool === "scissors" ? activeIconBtn : iconBtn}>
+              <Scissors size={18} />
+            </button>
             <Tip label="Cut Connections" keys={["X", "Drag"]} />
           </div>
           <div className="relative group">

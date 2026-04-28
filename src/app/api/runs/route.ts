@@ -143,6 +143,8 @@ export async function POST(request: Request) {
               return executeCropNode(data, inputs);
             case "extract-frame":
               return executeExtractFrameNode(data, inputs);
+            case "group":
+              return {};
           }
         },
       }

@@ -65,13 +65,19 @@ export interface ExtractFrameNodeData {
   error: string | null;
 }
 
+export interface GroupNodeData {
+  type: "group";
+  label: string;
+}
+
 export type NodeData =
   | TextNodeData
   | LLMNodeData
   | UploadImageNodeData
   | UploadVideoNodeData
   | CropImageNodeData
-  | ExtractFrameNodeData;
+  | ExtractFrameNodeData
+  | GroupNodeData;
 
 // Workflow graph types (React Flow wrappers)
 

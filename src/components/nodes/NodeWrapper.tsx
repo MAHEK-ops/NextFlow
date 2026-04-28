@@ -12,9 +12,10 @@ interface Props {
   selected?: boolean;
   minWidth?: number;
   children: ReactNode;
+  overlay?: ReactNode;
 }
 
-export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, children }: Props) {
+export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, children, overlay }: Props) {
   const setExecutingNodeIds = useWorkflowStore((s) => s.setExecutingNodeIds);
   const setRunStatus = useWorkflowStore((s) => s.setRunStatus);
 
@@ -26,13 +27,7 @@ export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, c
       const res = await fetch("/api/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          workflowId,
-          scope: "single",
-          selectedNodeIds: [nodeId],
-          nodes,
-          edges,
-        }),
+        body: JSON.stringify({ workflowId, scope: "single", selectedNodeIds: [nodeId], nodes, edges }),
       });
       const data = (await res.json()) as { status?: string; error?: string };
       if (!res.ok) {
@@ -52,7 +47,7 @@ export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, c
 
   return (
     <div className="relative" style={{ minWidth }}>
-      {selected && (
+      {selected && !overlay && (
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
           <button
             type="button"
@@ -65,6 +60,7 @@ export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, c
           </button>
         </div>
       )}
+      {overlay}
       <div
         className={`border rounded-2xl overflow-hidden ${selected ? "border-[#7c3aed]" : "border-[var(--node-border)]"}`}
         style={{ background: "var(--node-bg)" }}

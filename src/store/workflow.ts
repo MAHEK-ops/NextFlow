@@ -20,6 +20,8 @@ interface WorkflowState {
   failedNodeIds: Set<string>;
   undoStack: UndoSnapshot[];
   redoStack: UndoSnapshot[];
+  activeTool: string;
+  assetUrls: string[];
 }
 
 interface WorkflowActions {
@@ -27,6 +29,7 @@ interface WorkflowActions {
   addNode: (node: WorkflowNode) => void;
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void;
   removeNode: (nodeId: string) => void;
+  deleteNode: (nodeId: string) => void;
 
   setEdges: (edges: WorkflowEdge[]) => void;
   addEdge: (edge: WorkflowEdge) => void;
@@ -40,6 +43,11 @@ interface WorkflowActions {
   setExecutingNodeIds: (ids: Set<string>) => void;
   setFailedNodeIds: (ids: Set<string>) => void;
   resetExecutionState: () => void;
+
+  setActiveTool: (tool: string) => void;
+  addAssetUrl: (url: string) => void;
+  groupSelectedNodes: () => void;
+  ungroupNodes: (groupId: string) => void;
 
   clearCanvas: () => void;
   undo: () => void;
@@ -58,6 +66,8 @@ const initialState: WorkflowState = {
   failedNodeIds: new Set(),
   undoStack: [],
   redoStack: [],
+  activeTool: "select",
+  assetUrls: [],
 };
 
 function snapshot(nodes: WorkflowNode[], edges: WorkflowEdge[]): UndoSnapshot {
@@ -65,20 +75,15 @@ function snapshot(nodes: WorkflowNode[], edges: WorkflowEdge[]): UndoSnapshot {
 }
 
 export const useWorkflowStore = create<WorkflowStore>()(
-  immer((set) => ({
+  immer((set, get) => ({
     ...initialState,
 
     setNodes: (nodes) =>
-      set((state) => {
-        state.nodes = nodes as typeof state.nodes;
-      }),
+      set((state) => { state.nodes = nodes as typeof state.nodes; }),
 
     addNode: (node) =>
       set((state) => {
-        const snap = snapshot(
-          current(state.nodes) as WorkflowNode[],
-          current(state.edges) as WorkflowEdge[]
-        );
+        const snap = snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]);
         if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
         state.undoStack.push(snap);
         state.redoStack = [];
@@ -88,37 +93,27 @@ export const useWorkflowStore = create<WorkflowStore>()(
     updateNodeData: (nodeId, data) =>
       set((state) => {
         const node = state.nodes.find((n) => n.id === nodeId);
-        if (node) {
-          Object.assign(node.data, data);
-        }
+        if (node) Object.assign(node.data, data);
       }),
 
     removeNode: (nodeId) =>
       set((state) => {
-        const snap = snapshot(
-          current(state.nodes) as WorkflowNode[],
-          current(state.edges) as WorkflowEdge[]
-        );
+        const snap = snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]);
         if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
         state.undoStack.push(snap);
         state.redoStack = [];
         state.nodes = state.nodes.filter((n) => n.id !== nodeId);
-        state.edges = state.edges.filter(
-          (e) => e.source !== nodeId && e.target !== nodeId
-        );
+        state.edges = state.edges.filter((e) => e.source !== nodeId && e.target !== nodeId);
       }),
 
+    deleteNode: (nodeId) => get().removeNode(nodeId),
+
     setEdges: (edges) =>
-      set((state) => {
-        state.edges = edges as typeof state.edges;
-      }),
+      set((state) => { state.edges = edges as typeof state.edges; }),
 
     addEdge: (edge) =>
       set((state) => {
-        const snap = snapshot(
-          current(state.nodes) as WorkflowNode[],
-          current(state.edges) as WorkflowEdge[]
-        );
+        const snap = snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]);
         if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
         state.undoStack.push(snap);
         state.redoStack = [];
@@ -127,10 +122,7 @@ export const useWorkflowStore = create<WorkflowStore>()(
 
     removeEdge: (edgeId) =>
       set((state) => {
-        const snap = snapshot(
-          current(state.nodes) as WorkflowNode[],
-          current(state.edges) as WorkflowEdge[]
-        );
+        const snap = snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]);
         if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
         state.undoStack.push(snap);
         state.redoStack = [];
@@ -138,14 +130,10 @@ export const useWorkflowStore = create<WorkflowStore>()(
       }),
 
     setWorkflowId: (id) =>
-      set((state) => {
-        state.workflowId = id;
-      }),
+      set((state) => { state.workflowId = id; }),
 
     setWorkflowName: (name) =>
-      set((state) => {
-        state.workflowName = name;
-      }),
+      set((state) => { state.workflowName = name; }),
 
     loadWorkflow: (id, name, nodes, edges) =>
       set((state) => {
@@ -161,19 +149,13 @@ export const useWorkflowStore = create<WorkflowStore>()(
       }),
 
     setRunStatus: (status) =>
-      set((state) => {
-        state.runStatus = status;
-      }),
+      set((state) => { state.runStatus = status; }),
 
     setExecutingNodeIds: (ids) =>
-      set((state) => {
-        state.executingNodeIds = ids;
-      }),
+      set((state) => { state.executingNodeIds = ids; }),
 
     setFailedNodeIds: (ids) =>
-      set((state) => {
-        state.failedNodeIds = ids;
-      }),
+      set((state) => { state.failedNodeIds = ids; }),
 
     resetExecutionState: () =>
       set((state) => {
@@ -182,12 +164,60 @@ export const useWorkflowStore = create<WorkflowStore>()(
         state.failedNodeIds = new Set();
       }),
 
+    setActiveTool: (tool) =>
+      set((state) => { state.activeTool = tool; }),
+
+    addAssetUrl: (url) =>
+      set((state) => { state.assetUrls.push(url); }),
+
+    groupSelectedNodes: () =>
+      set((state) => {
+        const all = current(state.nodes) as WorkflowNode[];
+        const sel = all.filter((n) => n.selected && !n.parentId);
+        if (sel.length < 2) return;
+        let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+        for (const n of sel) {
+          x0 = Math.min(x0, n.position.x);
+          y0 = Math.min(y0, n.position.y);
+          x1 = Math.max(x1, n.position.x + (n.width ?? 240));
+          y1 = Math.max(y1, n.position.y + (n.height ?? 100));
+        }
+        const P = 24, gid = crypto.randomUUID(), gx = x0 - P, gy = y0 - P;
+        const group: WorkflowNode = {
+          id: gid, type: "group",
+          position: { x: gx, y: gy },
+          style: { width: x1 - x0 + P * 2, height: y1 - y0 + P * 2 },
+          data: { type: "group", label: "Group 1" },
+          selected: true,
+        };
+        const kids = sel.map((n) => ({
+          ...n, parentId: gid, extent: "parent" as const, selected: false,
+          position: { x: n.position.x - gx, y: n.position.y - gy },
+        }));
+        state.nodes = [group, ...all.filter((n) => !n.selected || n.parentId), ...kids] as typeof state.nodes;
+      }),
+
+    ungroupNodes: (groupId) =>
+      set((state) => {
+        const all = current(state.nodes) as WorkflowNode[];
+        const group = all.find((n) => n.id === groupId);
+        if (!group) return;
+        const ungrouped = all
+          .filter((n) => n.parentId === groupId)
+          .map(({ parentId: _p, extent: _e, ...rest }) => ({
+            ...rest,
+            position: { x: rest.position.x + group.position.x, y: rest.position.y + group.position.y },
+            selected: true,
+          }));
+        state.nodes = [
+          ...all.filter((n) => n.id !== groupId && n.parentId !== groupId),
+          ...ungrouped,
+        ] as typeof state.nodes;
+      }),
+
     clearCanvas: () =>
       set((state) => {
-        const snap = snapshot(
-          current(state.nodes) as WorkflowNode[],
-          current(state.edges) as WorkflowEdge[]
-        );
+        const snap = snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]);
         if (state.undoStack.length >= MAX_UNDO) state.undoStack.shift();
         state.undoStack.push(snap);
         state.redoStack = [];
@@ -199,12 +229,7 @@ export const useWorkflowStore = create<WorkflowStore>()(
       set((state) => {
         const snap = state.undoStack.pop();
         if (!snap) return;
-        state.redoStack.push(
-          snapshot(
-            current(state.nodes) as WorkflowNode[],
-            current(state.edges) as WorkflowEdge[]
-          )
-        );
+        state.redoStack.push(snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]));
         state.nodes = snap.nodes as typeof state.nodes;
         state.edges = snap.edges as typeof state.edges;
       }),
@@ -213,12 +238,7 @@ export const useWorkflowStore = create<WorkflowStore>()(
       set((state) => {
         const snap = state.redoStack.pop();
         if (!snap) return;
-        state.undoStack.push(
-          snapshot(
-            current(state.nodes) as WorkflowNode[],
-            current(state.edges) as WorkflowEdge[]
-          )
-        );
+        state.undoStack.push(snapshot(current(state.nodes) as WorkflowNode[], current(state.edges) as WorkflowEdge[]));
         state.nodes = snap.nodes as typeof state.nodes;
         state.edges = snap.edges as typeof state.edges;
       }),
