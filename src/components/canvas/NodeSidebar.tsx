@@ -112,9 +112,9 @@ export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
   const username = mounted ? (user?.username ?? user?.firstName ?? "User") : "User";
 
   const navBase =
-    "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm w-full text-left transition-colors";
-  const activeNav = `${navBase} bg-[#1a1a1a] text-[#e5e5e5]`;
-  const inactiveNav = `${navBase} text-[#888888] hover:text-[#e5e5e5] hover:bg-[#1a1a1a]`;
+    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full text-left transition-colors";
+  const activeNav = `${navBase} bg-[#1a1a1a] text-white font-medium`;
+  const inactiveNav = `${navBase} text-[#888888] hover:text-white hover:bg-[#1a1a1a]`;
 
   const filtered = NODE_DEFINITIONS.filter((n) =>
     n.label.toLowerCase().includes(search.toLowerCase())
@@ -128,15 +128,21 @@ export default function NodeSidebar({ onOpenAssets }: NodeSidebarProps) {
           className={inactiveNav}
           onClick={() => router.push("/dashboard")}
         >
-          <Home size={15} />
+          <div className="w-8 h-8 rounded-xl bg-[#1c1c1e] flex items-center justify-center flex-none">
+            <Home size={16} className="text-white" />
+          </div>
           Home
         </button>
         <button type="button" className={activeNav}>
-          <Layers size={15} />
+          <div className="w-8 h-8 rounded-xl bg-[#3b5bdb] flex items-center justify-center flex-none">
+            <Layers size={16} className="text-white" />
+          </div>
           Node Editor
         </button>
         <button type="button" className={inactiveNav} onClick={onOpenAssets}>
-          <FolderOpen size={15} />
+          <div className="w-8 h-8 rounded-xl bg-[#1e40af] flex items-center justify-center flex-none">
+            <FolderOpen size={16} className="text-white" />
+          </div>
           Assets
         </button>
       </div>

@@ -1,0 +1,85 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { Workflow, ChevronDown } from "lucide-react";
+import TitleDropdown from "./TitleDropdown";
+
+type SaveState = "idle" | "saving" | "saved";
+
+interface TitlePillProps {
+  workflowName: string;
+  onWorkflowNameChange: (name: string) => void;
+  onScheduleSave: () => void;
+  saveState: SaveState;
+  onImport: () => void;
+  onExport: () => void;
+}
+
+export default function TitlePill({
+  workflowName,
+  onWorkflowNameChange,
+  onScheduleSave,
+  saveState,
+  onImport,
+  onExport,
+}: TitlePillProps) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setDropdownOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [dropdownOpen]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        className="flex items-center gap-1.5 h-9 px-3 bg-[#141414]/90 backdrop-blur-sm border border-[#272727] rounded-2xl hover:bg-[#1a1a1a]/90 transition-colors"
+      >
+        <div className="w-5 h-5 rounded-md bg-[#3b5bdb] flex items-center justify-center flex-none">
+          <Workflow size={12} className="text-white" />
+        </div>
+        {isEditingName ? (
+          <input
+            autoFocus
+            type="text"
+            value={workflowName}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => { onWorkflowNameChange(e.target.value); onScheduleSave(); }}
+            onBlur={() => setIsEditingName(false)}
+            onKeyDown={(e) => { if (e.key === "Enter") setIsEditingName(false); }}
+            className="bg-transparent text-sm text-[#e5e5e5] font-medium focus:outline-none w-32 min-w-0 cursor-text"
+          />
+        ) : (
+          <span
+            className="text-sm text-[#e5e5e5] font-medium w-32 min-w-0 truncate text-left"
+            onDoubleClick={(e) => { e.stopPropagation(); setIsEditingName(true); setDropdownOpen(false); }}
+          >
+            {workflowName || "Untitled"}
+          </span>
+        )}
+        {saveState !== "idle" && (
+          <span className="text-[10px] text-[#3a3a3a] flex-none">
+            {saveState === "saving" ? "saving" : "saved"}
+          </span>
+        )}
+        <ChevronDown size={14} className="text-[#525252] flex-none" />
+      </button>
+      {dropdownOpen && (
+        <TitleDropdown
+          onClose={() => setDropdownOpen(false)}
+          onImport={onImport}
+          onExport={onExport}
+        />
+      )}
+    </div>
+  );
+}

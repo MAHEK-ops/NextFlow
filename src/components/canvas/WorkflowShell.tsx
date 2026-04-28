@@ -3,11 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { ReactFlowProvider } from "reactflow";
+import { PanelLeft } from "lucide-react";
 import { useWorkflowStore } from "@/store/workflow";
 import type { WorkflowNode, WorkflowEdge } from "@/types/workflow";
 import { exportWorkflowAsJson, parseWorkflowJson } from "@/lib/workflow-io";
 import { useWorkflowRun } from "@/hooks/useWorkflowRun";
-import TopBar from "./TopBar";
+import TitlePill from "./TitlePill";
+import TopBarActions from "./TopBarActions";
+import SelectionToolbar from "./SelectionToolbar";
 import NodeSidebar from "./NodeSidebar";
 import WorkflowCanvas from "./WorkflowCanvas";
 import HistorySidebar from "./HistorySidebar";
@@ -169,52 +172,60 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
 
   return (
     <ReactFlowProvider>
-      <div className="h-screen w-screen overflow-hidden flex flex-col">
-        <TopBar
-          workflowName={workflowName}
-          onWorkflowNameChange={setWorkflowName}
-          onScheduleSave={scheduleSave}
-          saveState={saveState}
-          onToggleSidebar={() => setShowSidebar((v) => !v)}
-          showVersionHistory={showVersionHistory}
-          onToggleVersionHistory={() => setShowVersionHistory((v) => !v)}
-          onOpenAssets={() => setShowAssetsPanel(true)}
-          onImport={handleTriggerImport}
-          onExport={handleExport}
-        />
-
-        <div className="flex-1 flex overflow-hidden">
-          {showSidebar && (
-            <NodeSidebar onOpenAssets={() => setShowAssetsPanel(true)} />
-          )}
-          <div className="relative flex-1 overflow-hidden">
-            <WorkflowCanvas />
-            {showAssetsPanel && (
-              <AssetsPanel onClose={() => setShowAssetsPanel(false)} />
-            )}
-          </div>
-          {showVersionHistory && (
-            <HistorySidebar
-              workflowId={workflowId}
-              onClose={() => setShowVersionHistory(false)}
+      <div className="h-screen w-screen overflow-hidden flex">
+        {showSidebar && (
+          <NodeSidebar onOpenAssets={() => setShowAssetsPanel(true)} />
+        )}
+        <div className="relative flex-1 overflow-hidden">
+          <WorkflowCanvas />
+          <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowSidebar((v) => !v)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#141414]/90 backdrop-blur-sm border border-[#272727] text-[#525252] hover:text-[#e5e5e5] hover:bg-[#1a1a1a]/90 transition-colors"
+            >
+              <PanelLeft size={16} />
+            </button>
+            <TitlePill
+              workflowName={workflowName}
+              onWorkflowNameChange={setWorkflowName}
+              onScheduleSave={scheduleSave}
+              saveState={saveState}
+              onImport={handleTriggerImport}
+              onExport={handleExport}
             />
+          </div>
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+            <TopBarActions
+              showVersionHistory={showVersionHistory}
+              onToggleVersionHistory={() => setShowVersionHistory((v) => !v)}
+              onOpenAssets={() => setShowAssetsPanel(true)}
+            />
+          </div>
+          <SelectionToolbar workflowId={workflowId} />
+          {showAssetsPanel && (
+            <AssetsPanel onClose={() => setShowAssetsPanel(false)} />
           )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <CommandPalette
+            workflowId={workflowId}
+            onRun={handleRun}
+            onExport={handleExport}
+            onImport={handleTriggerImport}
+          />
         </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-
-        <CommandPalette
-          workflowId={workflowId}
-          onRun={handleRun}
-          onExport={handleExport}
-          onImport={handleTriggerImport}
-        />
+        {showVersionHistory && (
+          <HistorySidebar
+            workflowId={workflowId}
+            onClose={() => setShowVersionHistory(false)}
+          />
+        )}
       </div>
     </ReactFlowProvider>
   );

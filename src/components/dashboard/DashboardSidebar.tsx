@@ -2,7 +2,6 @@ import Link from "next/link";
 import SidebarProfile from "./SidebarProfile";
 import {
   Home,
-  Layers,
   GitBranch,
   FolderOpen,
   Image as ImageIcon,
@@ -35,8 +34,11 @@ export default function DashboardSidebar() {
           </Link>
 
           <div className={inactiveRow}>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 via-yellow-400 to-green-400 flex items-center justify-center flex-shrink-0">
-              <Layers size={16} className="text-white" />
+            <div className="w-8 h-8 rounded-xl overflow-hidden grid grid-cols-2 grid-rows-2 flex-shrink-0">
+              <div className="bg-[#ea4335]" />
+              <div className="bg-[#4285f4]" />
+              <div className="bg-[#fbbc05]" />
+              <div className="bg-[#34a853]" />
             </div>
             Train Lora
           </div>
@@ -49,7 +51,7 @@ export default function DashboardSidebar() {
           </Link>
 
           <div className={toolRow}>
-            <div className="w-8 h-8 rounded-xl bg-[#1e3a5f] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#1e40af] flex items-center justify-center flex-shrink-0">
               <FolderOpen size={16} className="text-white" />
             </div>
             Assets
@@ -59,13 +61,13 @@ export default function DashboardSidebar() {
         <p className="text-xs text-[#3a3a3a] font-medium px-4 mt-4 mb-2">Tools</p>
         <nav className="flex flex-col gap-0.5">
           <div className={toolRow}>
-            <div className="w-8 h-8 rounded-xl bg-[#1a3a5c] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#0c4a6e] flex items-center justify-center flex-shrink-0">
               <ImageIcon size={16} className="text-white" />
             </div>
             Image
           </div>
           <div className={toolRow}>
-            <div className="w-8 h-8 rounded-xl bg-[#7c3a00] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#78350f] flex items-center justify-center flex-shrink-0">
               <VideoIcon size={16} className="text-white" />
             </div>
             Video
@@ -77,7 +79,7 @@ export default function DashboardSidebar() {
             Enhancer
           </div>
           <div className={toolRow}>
-            <div className="w-8 h-8 rounded-xl bg-[#a16207] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#854d0e] flex items-center justify-center flex-shrink-0">
               <Star size={16} className="text-white" />
             </div>
             Nano Banana
