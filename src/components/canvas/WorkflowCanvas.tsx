@@ -204,9 +204,14 @@ function Flow() {
       </ReactFlow>
 
       {nodes.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-2">
-          <p className="text-sm text-[#525252] select-none">Drag a node from the left panel to get started</p>
-          <p className="text-xs text-[#3a3a3a] select-none">Press Cmd+K to open the command palette</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <p className="text-sm font-medium text-[#3a3a3a] select-none">Add a node</p>
+          <p className="text-xs text-[#2a2a2a] select-none mt-1 flex items-center">
+            Double click, right click, or press
+            <span className="px-1.5 py-0.5 bg-[#1a1a1a] border border-[#272727] rounded text-xs text-[#525252] font-mono inline-flex items-center ml-1">
+              N
+            </span>
+          </p>
         </div>
       )}
 
@@ -234,7 +239,7 @@ function Flow() {
 
 export default function WorkflowCanvas() {
   return (
-    <main className="relative flex-1 h-full bg-[#0a0a0a]">
+    <main className="relative w-full h-full bg-[#0a0a0a]">
       <Flow />
     </main>
   );
