@@ -174,15 +174,45 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
     );
 
     return (
-        <div className="flex flex-col h-full bg-[#0a0a0a] text-white">
+        <div className="flex flex-col h-full bg-[#141414] text-white">
             {/* Hero banner */}
-            <div className="relative w-full h-[220px] bg-[#111111] border-b border-[#1a1a1a] overflow-hidden flex-none">
-                <div
-                    className="absolute inset-0 opacity-20"
-                    style={{
-                        backgroundImage: "radial-gradient(ellipse at 60% 50%, #7c3aed 0%, transparent 70%)",
-                    }}
-                />
+            <div className="flex items-center justify-between px-6 border-b border-[#1f1f1f] bg-[#141414] flex-none">
+                {/* Hero banner */}
+                <div className="relative w-full h-[400px] overflow-hidden flex-none">
+                    <img
+                        src="/hero-bg.webp"
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover object-center"
+                    />
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="relative z-10 h-full flex flex-col justify-end px-10 pb-10">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-9 h-9 rounded-xl bg-[#2563eb] flex items-center justify-center flex-none">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="5" cy="12" r="2.5" fill="white" />
+                                    <circle cx="19" cy="5" r="2.5" fill="white" />
+                                    <circle cx="19" cy="19" r="2.5" fill="white" />
+                                    <line x1="7.5" y1="11" x2="16.5" y2="6" stroke="white" strokeWidth="1.5" />
+                                    <line x1="7.5" y1="13" x2="16.5" y2="18" stroke="white" strokeWidth="1.5" />
+                                </svg>
+                            </div>
+                            <h1 className="text-[2.2rem] font-bold text-white tracking-tight">Node Editor</h1>
+                        </div>
+                        <p className="text-sm text-[#c8c8c8] max-w-sm mb-5 leading-relaxed">
+                            Build and run AI pipelines visually. Connect nodes to create powerful workflows.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleCreateNew}
+                            disabled={creatingNew}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-medium rounded-full hover:bg-[#e5e5e5] disabled:opacity-60 transition-colors w-fit"
+                        >
+                            {creatingNew ? <Loader2 size={14} className="animate-spin" /> : null}
+                            New Workflow
+                            {!creatingNew && <span className="ml-1">→</span>}
+                        </button>
+                    </div>
+                </div>
                 <div className="relative z-10 h-full flex flex-col justify-center px-10">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 rounded-xl bg-[#7c3aed] flex items-center justify-center">
@@ -214,8 +244,8 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
                             key={tab}
                             type="button"
                             className={`px-4 py-3 text-sm transition-colors ${tab === "Projects"
-                                    ? "text-white border-b-2 border-white"
-                                    : "text-[#525252] hover:text-white border-b-2 border-transparent"
+                                ? "text-white border-b-2 border-white"
+                                : "text-[#525252] hover:text-white border-b-2 border-transparent"
                                 }`}
                         >
                             {tab}
@@ -248,7 +278,7 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
             </div>
 
             {/* Grid */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 bg-[#141414]">
                 {workflows.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 pb-20">
                         <div className="w-16 h-16 rounded-2xl bg-[#7c3aed] flex items-center justify-center">
