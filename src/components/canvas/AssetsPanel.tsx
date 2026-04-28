@@ -42,7 +42,7 @@ export default function AssetsPanel({ onClose }: Props) {
 
   return (
     <aside
-      className="w-[240px] flex-none flex flex-col h-full border-l"
+      className="w-[150px] flex-none flex flex-col h-full border-l"
       style={{ background: "var(--sidebar-bg)", borderColor: "var(--toolbar-border)" }}
     >
       <div className="h-12 flex items-center px-4 gap-2 border-b flex-none" style={{ borderColor: "var(--toolbar-border)" }}>

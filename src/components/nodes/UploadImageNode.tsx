@@ -118,11 +118,12 @@ function UploadImageNode({ id, data, selected }: NodeProps<UploadImageNodeData>)
       <div className="px-3 py-2.5">
         {data.imageUrl ? (
           <div>
-            <div className="rounded-xl overflow-hidden">
+            <div className="rounded-xl overflow-hidden" style={{ maxHeight: "200px" }}>
               <img
                 src={data.imageUrl}
                 alt={data.fileName ?? "uploaded image"}
-                className="w-full object-cover"
+                className="w-full h-full object-cover"
+                style={{ maxHeight: "200px", objectFit: "cover" }}
               />
             </div>
             <p className="mt-1.5 text-xs truncate" style={{ color: "var(--text-muted)" }}>

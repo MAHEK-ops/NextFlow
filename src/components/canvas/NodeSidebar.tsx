@@ -64,6 +64,12 @@ function NodeRow({ def, collapsed }: { def: NodeDef; collapsed: boolean }) {
 
   return (
     <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("nodeType", def.type);
+        e.dataTransfer.setData("application/reactflow-nodetype", def.type);
+        e.dataTransfer.effectAllowed = "move";
+      }}
       onClick={handleClick}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
       hover:bg-[#151515] transition`}
@@ -169,7 +175,7 @@ export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeS
       </div>
 
       {/* FOOTER (NOW FIXED AT BOTTOM) */}
-      <div className="p-2 border-t border-[#1a1a1a]">
+      <div className="p-2">
         <SidebarFooter collapsed={collapsed} />
       </div>
     </aside>

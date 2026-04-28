@@ -124,6 +124,8 @@ export async function runWorkflow(
         await callbacks.onNodeStart(node.id);
         try {
           const inputs = resolveNodeInputs(node, edges, outputs);
+          // eslint-disable-next-line no-console
+          console.log("[engine] resolved inputs for node", node.id, node.type, JSON.stringify(inputs));
           const nodeOutputs = await callbacks.executeNode(node, inputs);
           outputs.set(node.id, nodeOutputs);
           await callbacks.onNodeComplete(node.id, nodeOutputs);

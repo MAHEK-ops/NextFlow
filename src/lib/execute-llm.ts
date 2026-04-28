@@ -8,28 +8,34 @@ export async function executeLlmNode(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
+  const systemPromptInput = inputs["system_prompt"] ?? inputs["systemPrompt"];
   const systemPrompt =
-    typeof inputs["system_prompt"] === "string"
-      ? inputs["system_prompt"]
-      : nodeData.systemPrompt;
+    typeof systemPromptInput === "string" ? systemPromptInput : nodeData.systemPrompt;
 
-  const userMessage =
-    typeof inputs["user_message"] === "string" ? inputs["user_message"] : "";
+  const userMessageInput = inputs["user_message"] ?? inputs["userMessage"];
+  const userMessage = typeof userMessageInput === "string" ? userMessageInput : "";
 
-  const imageInput = inputs["images"];
+  const imageInput = inputs["images"] ?? inputs["imageUrls"];
   const imageUrls: string[] = Array.isArray(imageInput)
     ? imageInput.filter((u): u is string => typeof u === "string")
     : typeof imageInput === "string"
     ? [imageInput]
     : [];
 
-  const hasContent =
-    userMessage.trim().length > 0 ||
-    (systemPrompt && systemPrompt.trim().length > 0) ||
-    imageUrls.length > 0;
+  const hasUserMessage = userMessage.trim().length > 0;
+  const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim().length > 0);
+  const hasImages = imageUrls.length > 0;
 
-  if (!hasContent) {
-    throw new Error("LLM node requires at least one input: user message, system prompt, or an image");
+  // eslint-disable-next-line no-console
+  console.log("[llm] inputs received:", JSON.stringify({
+    keys: Object.keys(inputs),
+    hasUserMessage,
+    hasSystemPrompt,
+    hasImages,
+  }));
+
+  if (!hasUserMessage && !hasSystemPrompt && !hasImages) {
+    throw new Error("LLM node requires at least one input: a message, system prompt, or image");
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);

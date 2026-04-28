@@ -41,7 +41,11 @@ export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) 
         </button>
         <button
           type="button"
-          onClick={groupSelectedNodes}
+          onClick={() => {
+            // eslint-disable-next-line no-console
+            console.log("[group] clicked, selected:", selected.map((n) => n.id));
+            groupSelectedNodes();
+          }}
           className="flex items-center gap-1.5 h-8 px-3 bg-[#1a1a1a] border border-[#2a2a2a] hover:bg-[#222222] rounded-full text-sm text-[#e5e5e5] transition-colors shadow-lg whitespace-nowrap"
         >
           <Braces size={13} />

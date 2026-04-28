@@ -111,7 +111,10 @@ export default function CanvasFlow() {
         });
         return;
       }
-      const nodeType = event.dataTransfer.getData("nodeType") as NodeType;
+      const nodeType = (
+        event.dataTransfer.getData("application/reactflow-nodetype") ||
+        event.dataTransfer.getData("nodeType")
+      ) as NodeType;
       if (!nodeType || !(nodeType in DEFAULT_NODE_DATA)) return;
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       addNode({ id: crypto.randomUUID(), type: nodeType, position, data: DEFAULT_NODE_DATA[nodeType] });
