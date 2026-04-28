@@ -4,7 +4,11 @@ import { useUser } from "@clerk/nextjs";
 import { useUIStore } from "@/store/ui";
 import SidebarProfile from "./SidebarProfile";
 
-export default function SidebarFooter() {
+type Props = {
+  collapsed: boolean;
+};
+
+export default function SidebarFooter({ collapsed }: Props) {
   const { isSignedIn, isLoaded } = useUser();
   const { openAuthModal } = useUIStore();
 
@@ -12,10 +16,12 @@ export default function SidebarFooter() {
     return (
       <div className="flex items-center gap-2.5 px-3 py-2.5">
         <div className="w-8 h-8 rounded-full bg-[#1c1c1e] animate-pulse flex-none" />
-        <div className="flex-1 space-y-1.5">
-          <div className="h-3 bg-[#1c1c1e] rounded animate-pulse w-24" />
-          <div className="h-2.5 bg-[#1c1c1e] rounded animate-pulse w-12" />
-        </div>
+        {!collapsed && (
+          <div className="flex-1 space-y-1.5">
+            <div className="h-3 bg-[#1c1c1e] rounded animate-pulse w-24" />
+            <div className="h-2.5 bg-[#1c1c1e] rounded animate-pulse w-12" />
+          </div>
+        )}
       </div>
     );
   }
@@ -27,10 +33,10 @@ export default function SidebarFooter() {
         onClick={openAuthModal}
         className="w-full flex items-center justify-center py-2.5 px-4 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-medium rounded-xl transition-colors"
       >
-        Sign in
+        {collapsed ? "→" : "Sign in"}
       </button>
     );
   }
 
-  return <SidebarProfile />;
+  return <SidebarProfile collapsed={collapsed} />;
 }
