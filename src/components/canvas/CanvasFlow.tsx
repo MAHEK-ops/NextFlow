@@ -195,20 +195,33 @@ export default function CanvasFlow() {
         panOnDrag={activeTool === "pan"} selectionOnDrag={activeTool === "select"}
         zoomOnScroll snapToGrid={false} style={{ background: "var(--canvas-bg)" }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1.5} color="var(--canvas-dot-color)" />
         {showMinimap && (
-          <MiniMap position="bottom-right" nodeColor={getNodeColor}
-            style={{ background: "var(--toolbar-bg)", marginBottom: "48px" }} maskColor="rgba(0,0,0,0.4)" />
+          <MiniMap
+            position="bottom-right"
+            nodeColor={getNodeColor}
+            maskColor="rgba(0,0,0,0.1)"
+            pannable
+            zoomable
+            style={{
+              background: "var(--toolbar-bg)",
+              border: "1px solid var(--toolbar-border)",
+              borderRadius: "12px",
+              marginBottom: "48px",
+            }}
+          />
         )}
       </ReactFlow>
 
       {nodes.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <p className="text-sm font-medium select-none" style={{ color: "var(--text-muted)" }}>Add a node</p>
-          <p className="text-xs select-none mt-1 flex items-center" style={{ color: "var(--text-muted)", opacity: 0.7 }}>
+          <p className="text-xs select-none mt-1.5 flex items-center" style={{ color: "var(--text-faint)" }}>
             Double click, right click, or press
-            <kbd className="ml-1 px-1.5 py-0.5 rounded text-xs font-mono border inline-flex items-center"
-              style={{ borderColor: "var(--toolbar-border)", background: "var(--input-bg)", color: "var(--text-muted)" }}>
+            <kbd
+              className="ml-1.5 px-1.5 py-0.5 rounded text-xs font-mono inline-flex items-center border"
+              style={{ background: "var(--input-bg)", borderColor: "var(--toolbar-border)", color: "var(--text-muted)" }}
+            >
               N
             </kbd>
           </p>

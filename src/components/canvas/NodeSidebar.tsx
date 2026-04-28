@@ -148,7 +148,7 @@ export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeS
 
       <div className="flex-1 overflow-y-auto py-2">
         {!collapsed && (
-          <p className="text-[10px] font-semibold uppercase tracking-wider px-4 pb-1.5" style={{ color: "var(--text-muted)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider px-4 pb-1.5" style={{ color: "var(--text-faint)" }}>
             Quick Access
           </p>
         )}

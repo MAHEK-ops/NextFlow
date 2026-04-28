@@ -58,7 +58,7 @@ export default function DashboardSidebar() {
           </div>
         </nav>
 
-        <p className="text-xs font-medium px-4 mt-4 mb-2" style={{ color: "var(--text-muted)" }}>Tools</p>
+        <p className="text-xs font-medium px-4 mt-4 mb-2" style={{ color: "var(--text-faint)" }}>Tools</p>
         <nav className="flex flex-col gap-0.5">
           <div className={toolRow}>
             <div className="w-8 h-8 rounded-xl bg-[#0c4a6e] flex items-center justify-center flex-shrink-0">
@@ -102,7 +102,7 @@ export default function DashboardSidebar() {
           </div>
         </nav>
 
-        <p className="text-xs font-medium px-4 mt-4 mb-2" style={{ color: "var(--text-muted)" }}>Sessions</p>
+        <p className="text-xs font-medium px-4 mt-4 mb-2" style={{ color: "var(--text-faint)" }}>Sessions</p>
       </div>
 
       <div className="border-t p-2" style={{ borderColor: "var(--toolbar-border)" }}>

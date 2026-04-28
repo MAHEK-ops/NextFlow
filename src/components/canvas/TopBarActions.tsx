@@ -44,7 +44,9 @@ export default function TopBarActions({
         className={`w-8 h-8 flex items-center justify-center ${btn} ${hoverCls}`}
         style={btnStyle}
       >
-        {mounted ? (theme === "dark" ? <Moon size={15} className="icon-filled" /> : <Sun size={15} className="icon-filled" />) : <Moon size={15} className="icon-filled" />}
+        {!mounted && <div className="w-4 h-4" />}
+        {mounted && theme === "dark" && <Moon size={15} className="fill-current" style={{ color: "#aaaaaa", stroke: "none" }} />}
+        {mounted && theme !== "dark" && <Sun size={16} className="fill-current" style={{ color: "#f59e0b", stroke: "none" }} />}
       </button>
 
       <button type="button" className={`h-8 px-3 flex items-center gap-1.5 text-sm ${btn} ${hoverCls}`} style={btnStyle}>

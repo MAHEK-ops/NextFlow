@@ -22,10 +22,10 @@ interface Props {
   onToggleNodePicker: () => void;
 }
 
-const iconBtn = "w-10 h-10 flex items-center justify-center rounded-xl text-[#999999] hover:text-[#cccccc] hover:bg-[var(--input-bg)] transition-colors cursor-pointer";
-const activeIconBtn = "w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--input-bg)] text-white transition-colors cursor-pointer";
-const borderedBtn = "w-9 h-9 flex items-center justify-center rounded-xl border border-[#333333] bg-[var(--toolbar-bg)] text-[#aaaaaa] hover:text-[#e5e5e5] hover:bg-[var(--input-bg)] transition-colors cursor-pointer";
-const shortcutsBtn = "h-9 px-3 flex items-center gap-1.5 rounded-xl border border-[#333333] bg-[var(--toolbar-bg)] text-[#aaaaaa] hover:text-[#e5e5e5] hover:bg-[var(--input-bg)] text-xs transition-colors cursor-pointer";
+const iconBtn = "w-10 h-10 flex items-center justify-center rounded-xl text-[var(--toolbar-text)] hover:text-[var(--text-primary)] hover:bg-[var(--input-bg)] transition-colors cursor-pointer";
+const activeIconBtn = "w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--input-bg)] text-[var(--text-primary)] transition-colors cursor-pointer";
+const borderedBtn = "w-9 h-9 flex items-center justify-center rounded-xl border border-[var(--toolbar-border)] bg-[var(--toolbar-bg)] text-[var(--toolbar-text)] hover:text-[var(--text-primary)] hover:bg-[var(--input-bg)] transition-colors cursor-pointer";
+const shortcutsBtn = "h-9 px-3 flex items-center gap-1.5 rounded-xl border border-[var(--toolbar-border)] bg-[var(--toolbar-bg)] text-[var(--toolbar-text)] hover:text-[var(--text-primary)] hover:bg-[var(--input-bg)] text-xs transition-colors cursor-pointer";
 
 function Tip({ label, keys }: { label: string; keys?: string[] }) {
   return (
@@ -101,7 +101,12 @@ export default function CanvasToolbar({
       </div>
 
       <div className="absolute bottom-6 right-4 z-10">
-        <button type="button" onClick={() => setShowMinimap(!showMinimap)} className={showMinimap ? activeIconBtn : iconBtn}>
+        <button
+          type="button"
+          onClick={() => setShowMinimap(!showMinimap)}
+          className={showMinimap ? activeIconBtn : iconBtn}
+          style={{ border: "1px solid var(--toolbar-border)", background: showMinimap ? "var(--input-bg)" : "var(--toolbar-bg)" }}
+        >
           <Map size={18} />
         </button>
       </div>
