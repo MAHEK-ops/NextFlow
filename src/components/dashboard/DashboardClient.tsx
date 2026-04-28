@@ -6,11 +6,26 @@ import { formatDistanceToNow } from "date-fns";
 import { Plus, MoreHorizontal, ExternalLink, Pencil, Copy, Trash2, X, Loader2 } from "lucide-react";
 import { SAMPLE_WORKFLOW_NAME, SAMPLE_NODES, SAMPLE_EDGES } from "@/lib/sample-workflow";
 import { useUIStore } from "@/store/ui";
+import CanvasPreview from "@/components/CanvasPreview";
+
+interface Node {
+    id: string;
+    position: { x: number; y: number };
+    width?: number;
+    height?: number;
+}
+
+interface Edge {
+    source: string;
+    target: string;
+}
 
 interface Workflow {
     id: string;
     name: string;
     updatedAt: string;
+    nodes?: Node[];
+    edges?: Edge[];
 }
 
 interface ContextMenu {
@@ -181,85 +196,119 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
     return (
         <div className="flex flex-col h-full bg-[#141414] text-white">
             {/* Hero banner */}
-            <div className="relative w-full h-[380px] overflow-hidden flex-none">
+            <div className="relative w-full h-[280px] md:h-[310px] lg:h-[370px] overflow-hidden flex-none">
                 <img
                     src="/hero-bg.jpeg"
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-black/30" />
-                <div className="relative z-10 h-full flex flex-col justify-end px-10 pb-10">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-9 h-9 rounded-xl bg-[#2563eb] flex items-center justify-center flex-none">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                <circle cx="5" cy="12" r="2.5" fill="white" />
-                                <circle cx="19" cy="5" r="2.5" fill="white" />
-                                <circle cx="19" cy="19" r="2.5" fill="white" />
-                                <line x1="7.5" y1="11" x2="16.5" y2="6" stroke="white" strokeWidth="1.5" />
-                                <line x1="7.5" y1="13" x2="16.5" y2="18" stroke="white" strokeWidth="1.5" />
-                            </svg>
-                        </div>
-                        <h1 className="text-[2.2rem] font-bold text-white tracking-tight">Node Editor</h1>
+
+                {/* darker gradient like Krea */}
+                <div className="absolute inset-0 bg-black/10" />
+
+                <div className="relative z-10 h-full flex flex-col justify-start pt-20 pl-20 pr-12">
+
+                    {/* Icon + Title */}
+                    <div className="flex items-center gap-4 mb-2">
+                        <img
+                            src="https://optim-images.krea.ai/https---s-krea-ai-icons-NodeEditor-png-256.webp"
+                            alt="Node Editor"
+                            className="w-7 h-7 object-contain"
+                        />
+                        <h1 className="font-book text-3xl font-semibold">
+                            Node Editor
+                        </h1>
                     </div>
-                    <p className="text-sm text-[#c8c8c8] max-w-sm mb-5 leading-relaxed">
-                        Build and run AI pipelines visually. Connect nodes to create powerful workflows.
+
+                    {/* Description */}
+                    <p className="text-[14px] text-white/90 max-w-[400px] leading-relaxed mb-12">
+                        Nodes is the most powerful way to operate Krea. Connect every tool and model into complex automated pipelines.
                     </p>
+
+                    {/* Button */}
                     <button
                         type="button"
                         onClick={handleCreateNew}
                         disabled={creatingNew}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-medium rounded-full hover:bg-[#e5e5e5] disabled:opacity-60 transition-colors w-fit"
+                        className="flex mt-7 items-center gap-2 px-6 py-2 bg-white text-black text-sm font-medium rounded-full hover:bg-neutral-200 transition-all w-fit"
                     >
-                        {creatingNew ? <Loader2 size={14} className="animate-spin" /> : null}
+                        {creatingNew && <Loader2 size={14} className="animate-spin" />}
                         New Workflow
-                        {!creatingNew && <span className="ml-1">→</span>}
+                        <span className="ml-1">→</span>
                     </button>
+
                 </div>
             </div>
 
             {/* Tabs + search bar */}
-            <div className="flex items-center justify-between px-6 border-b border-[#1a1a1a] flex-none">
-                <div className="flex items-center gap-1">
-                    {["Projects", "Apps", "Examples", "Templates"].map((tab) => (
-                        <button
-                            key={tab}
-                            type="button"
-                            className={`px-4 py-3 text-sm transition-colors ${tab === "Projects"
-                                ? "text-white border-b-2 border-white"
-                                : "text-[#525252] hover:text-white border-b-2 border-transparent"
-                                }`}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
-                <div className="flex items-center gap-2 py-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#111111] border border-[#272727] rounded-lg">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#525252" strokeWidth="2">
-                            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder="Search projects..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="bg-transparent text-sm text-white placeholder:text-[#525252] outline-none w-36"
-                        />
+            <div className="flex flex-col px-12 pt-12 flex-none ml-8">
+
+                {/* Top row */}
+                <div className="flex items-center justify-between">
+
+                    {/* Tabs */}
+                    <div className="flex items-center gap-2">
+                        {["Projects", "Apps", "Examples", "Templates"].map((tab) => (
+                            <button
+                                key={tab}
+                                type="button"
+                                className={`px-4 py-2 text-sm rounded-lg transition-all ${tab === "Projects"
+                                    ? "bg-[#2a2a2a] text-white"
+                                    : "text-[#a3a3a3] hover:text-white hover:bg-[#1f1f1f]"
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
                     </div>
-                    <button
-                        type="button"
-                        onClick={handleLoadSample}
-                        disabled={loadingSample}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#111111] border border-[#272727] rounded-lg text-sm text-[#a3a3a3] hover:text-white transition-colors disabled:opacity-60"
-                    >
-                        {loadingSample ? <Loader2 size={12} className="animate-spin" /> : null}
-                        Load Sample
-                    </button>
+
+                    {/* Right side */}
+                    <div className="flex items-center gap-2">
+                        {/* Search */}
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#111111] border border-[#272727] rounded-lg">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Search projects..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="bg-transparent text-sm text-white placeholder:text-[#6b6b6b] outline-none w-40"
+                            />
+                        </div>
+
+                        {/* Sample Data */}
+                        <button
+                            type="button"
+                            onClick={handleLoadSample}
+                            className="px-3 py-1.5 bg-[#111111] border border-[#272727] rounded-lg text-sm text-[#a3a3a3] hover:text-white"
+                        >
+                            Sample Data
+                        </button>
+
+                        {/* Eye button */}
+                        <button
+                            type="button"
+                            className="flex h-9 items-center justify-center rounded-md border border-[#272727] bg-[#111111] px-2.5 hover:bg-[#1f1f1f]"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2">
+                                <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+                                <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+                                <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+                                <path d="m2 2 20 20" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
+
+                {/* FULL WIDTH DIVIDER */}
+                <div className="mt-3 h-px w-full bg-[#1f1f1f]" />
             </div>
 
             {/* Grid */}
-            <div className="flex-1 overflow-y-auto p-6 bg-[#141414]">
+            <div className="flex-1 overflow-y-auto px-8 py-6 bg-[#141414]">
                 {workflows.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 pb-20">
                         <div className="w-16 h-16 rounded-2xl bg-[#2563eb] flex items-center justify-center">
@@ -296,7 +345,7 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                         </a>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                         {/* New workflow card */}
                         <button
                             type="button"
@@ -304,14 +353,25 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                             disabled={creatingNew}
                             className="flex flex-col gap-2 group"
                         >
-                            <div className="aspect-square w-full rounded-xl bg-[#1a1a1a] border border-[#272727] hover:border-[#3a3a3a] flex items-center justify-center transition-colors">
-                                {creatingNew ? (
-                                    <Loader2 size={24} className="text-[#525252] animate-spin" />
-                                ) : (
-                                    <div className="w-10 h-10 rounded-full bg-[#272727] flex items-center justify-center group-hover:bg-[#333333] transition-colors">
-                                        <Plus size={18} className="text-white" />
-                                    </div>
-                                )}
+                            <div className="aspect-square w-full rounded-xl bg-[#1f1f1f] border border-[#2a2a2a] hover:border-[#3a3a3a] flex items-center justify-center transition-all transition-all hover:scale-[1.02]">
+
+                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="black"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <path d="M5 12h14" />
+                                        <path d="M12 5v14" />
+                                    </svg>
+                                </div>
+
                             </div>
                             <p className="text-sm text-white text-left px-1">New Workflow</p>
                         </button>
@@ -319,11 +379,74 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                         {/* Workflow cards */}
                         {filtered.map((w) => (
                             <div key={w.id} className="flex flex-col gap-2 group">
+
                                 <div
-                                    className="aspect-square w-full rounded-xl bg-[#1a1a1a] border border-[#272727] hover:border-[#3a3a3a] transition-colors relative cursor-pointer overflow-hidden"
+                                    className="aspect-square w-full rounded-xl bg-[#1f1f1f] border border-[#2a2a2a] hover:border-[#3a3a3a] transition-all cursor-pointer overflow-hidden relative"
                                     onClick={() => router.push(`/workflow/${w.id}`)}
                                     onContextMenu={(e) => openContextMenu(e, w)}
                                 >
+
+                                    {/* Canvas Preview (SVG like Krea) */}
+                                    {w.nodes && w.edges ? (
+                                        <svg
+                                            viewBox="-50 -50 800 600"
+                                            preserveAspectRatio="xMidYMid meet"
+                                            className="w-full h-full"
+                                        >
+                                            {/* Edges */}
+                                            {w.edges.map((edge: any, i: number) => {
+                                                const source = w.nodes?.find((n) => n.id === edge.source);
+                                                const target = w.nodes?.find((n) => n.id === edge.target);
+
+                                                if (!source || !target) return null;
+
+                                                const x1 = source.position.x + 120;
+                                                const y1 = source.position.y + 40;
+                                                const x2 = target.position.x;
+                                                const y2 = target.position.y + 40;
+
+                                                return (
+                                                    <path
+                                                        key={i}
+                                                        d={`M ${x1} ${y1} C ${x1 + 80} ${y1}, ${x2 - 80} ${y2}, ${x2} ${y2}`}
+                                                        stroke="#7c3aed"
+                                                        strokeWidth="4"
+                                                        fill="none"
+                                                        strokeLinecap="round"
+                                                        opacity="0.85"
+                                                    />
+                                                );
+                                            })}
+
+                                            {/* Nodes */}
+                                            {w.nodes.map((node: any) => (
+                                                <g key={node.id}>
+                                                    <rect
+                                                        x={node.position.x}
+                                                        y={node.position.y}
+                                                        width={node.width || 180}
+                                                        height={node.height || 100}
+                                                        rx="20"
+                                                        fill="#3a3a3a"
+                                                        stroke="#525252"
+                                                        strokeWidth="2"
+                                                    />
+                                                    <circle
+                                                        cx={node.position.x + (node.width || 180)}
+                                                        cy={node.position.y + 20}
+                                                        r="6"
+                                                        fill="#22c55e"
+                                                        opacity="0.9"
+                                                    />
+                                                </g>
+                                            ))}
+                                        </svg>
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[#525252] text-sm">
+                                            No preview
+                                        </div>
+                                    )}
+
                                     {/* Three dot menu */}
                                     <button
                                         type="button"
@@ -333,10 +456,13 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                                         <MoreHorizontal size={14} className="text-[#a3a3a3]" />
                                     </button>
                                 </div>
+
+                                {/* Text */}
                                 <div className="px-1">
                                     <p className="text-sm text-white truncate">{w.name}</p>
-                                    <p className="text-xs text-[#525252] mt-0.5">
-                                        Edited {formatDistanceToNow(new Date(w.updatedAt), { addSuffix: true })}
+                                    <p className="text-xs text-[#6b6b6b] mt-0.5">
+                                        Edited{" "}
+                                        {formatDistanceToNow(new Date(w.updatedAt), { addSuffix: true })}
                                     </p>
                                 </div>
                             </div>
