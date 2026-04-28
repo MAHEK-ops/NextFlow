@@ -58,10 +58,10 @@ function NodeRow({ type, label, icon: Icon, collapsed }: NodeRowProps) {
       role="button" tabIndex={0} draggable
       onDragStart={onDragStart} onClick={handleClick}
       onKeyDown={(e) => { if (e.key === "Enter") handleClick(); }}
-      className={`flex items-center gap-3 py-2 rounded-xl mx-1 cursor-pointer transition-colors group hover:bg-[var(--input-bg)] ${collapsed ? "justify-center px-1" : "px-3"}`}
+      className={`flex items-center gap-3 py-1.5 rounded-xl mx-1 cursor-pointer transition-colors group hover:bg-[var(--input-bg)] ${collapsed ? "justify-center px-1" : "px-3"}`}
     >
-      <div className="w-9 h-9 rounded-2xl flex-none flex items-center justify-center" style={{ background: color }}>
-        <Icon size={17} className="text-white" />
+      <div className="w-7 h-7 rounded-xl flex-none flex items-center justify-center" style={{ background: color }}>
+        <Icon size={15} className="text-white" />
       </div>
       {!collapsed && (
         <span className="text-sm font-medium truncate transition-colors" style={{ color: "var(--text-primary)" }}>{label}</span>
@@ -90,7 +90,7 @@ export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeS
     : "U";
   const username = mounted ? (user?.username ?? user?.firstName ?? "User") : "User";
 
-  const navBase = `flex items-center ${collapsed ? "justify-center px-1" : "gap-3 px-3"} py-2.5 rounded-xl text-sm font-medium w-full text-left transition-colors`;
+  const navBase = `flex items-center ${collapsed ? "justify-center px-1" : "gap-3 px-3"} py-2 rounded-xl text-sm font-medium w-full text-left transition-colors`;
   const activeNav = `${navBase} bg-[var(--input-bg)]`;
   const inactiveNav = `${navBase} hover:bg-[var(--input-bg)]`;
 
@@ -114,21 +114,21 @@ export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeS
       <div className="px-2 pb-2 flex flex-col gap-0.5">
         <button type="button" className={inactiveNav} onClick={() => router.push("/dashboard")}
           style={{ color: "var(--text-primary)" }}>
-          <div className="w-9 h-9 rounded-2xl bg-[#1c1c1e] flex items-center justify-center flex-none">
-            <Home size={18} className="text-white" />
+          <div className="w-7 h-7 rounded-xl bg-[#1c1c1e] flex items-center justify-center flex-none">
+            <Home size={15} className="text-white" />
           </div>
           {!collapsed && "Home"}
         </button>
         <button type="button" className={activeNav} style={{ color: "var(--text-primary)" }}>
-          <div className="w-9 h-9 rounded-2xl bg-[#3b5bdb] flex items-center justify-center flex-none">
-            <Layers size={18} className="text-white" />
+          <div className="w-7 h-7 rounded-xl bg-[#1c1c1e] flex items-center justify-center flex-none">
+            <Layers size={15} className="text-white" />
           </div>
           {!collapsed && "Node Editor"}
         </button>
         <button type="button" className={inactiveNav} onClick={onOpenAssets}
           style={{ color: "var(--text-primary)" }}>
-          <div className="w-9 h-9 rounded-2xl bg-[#1e40af] flex items-center justify-center flex-none">
-            <FolderOpen size={18} className="text-white" />
+          <div className="w-7 h-7 rounded-xl bg-[#1c1c1e] flex items-center justify-center flex-none">
+            <FolderOpen size={15} className="text-white" />
           </div>
           {!collapsed && "Assets"}
         </button>
@@ -166,7 +166,7 @@ export default function NodeSidebar({ onOpenAssets, onToggle, collapsed }: NodeS
             onClick={() => setShowProfile(!showProfile)}
             className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5"} px-3 py-2.5 mx-1 rounded-xl hover:bg-[var(--input-bg)] transition-colors cursor-pointer w-full`}
           >
-            <div className="w-9 h-9 rounded-xl bg-[#1c1c1e] border border-[#272727] flex items-center justify-center text-sm text-white font-medium flex-none">
+            <div className="w-9 h-9 rounded-full bg-[#1c1c1e] border border-[#272727] flex items-center justify-center text-sm text-white font-medium flex-none">
               {initial}
             </div>
             {!collapsed && (
