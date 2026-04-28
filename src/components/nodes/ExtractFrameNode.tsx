@@ -14,7 +14,7 @@ function ExtractFrameNode({ id, data, selected }: NodeProps<ExtractFrameNodeData
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
 
   return (
-    <NodeWrapper nodeId={id} label={data.label} selected={selected}>
+    <NodeWrapper nodeId={id} label={data.label} selected={selected} error={data.error}>
       <div className="relative">
         <Handle type="target" position={Position.Left} id="video_url" data-handletype="video"
           style={{ ...HS, background: HC.video, borderColor: "var(--node-bg)", top: 18 }} />
@@ -40,7 +40,6 @@ function ExtractFrameNode({ id, data, selected }: NodeProps<ExtractFrameNodeData
             <img src={data.outputUrl} alt="extracted frame" className="w-full max-h-[100px] object-cover rounded-xl" />
           </div>
         )}
-        {data.error !== null && <p className="px-3 pb-3 text-xs text-red-400">{data.error}</p>}
       </div>
 
       <Handle type="source" position={Position.Right} id="output" data-handletype="image"

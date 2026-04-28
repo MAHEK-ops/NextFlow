@@ -1,110 +1,117 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Loader2, ChevronDown, ChevronRight, X } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Loader2, Clock, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { WorkflowRunRecord, RunStatus, RunScope, NodeExecutionRecord } from "@/types/workflow";
+import type { WorkflowRunRecord, RunScope, NodeExecutionRecord } from "@/types/workflow";
 
 interface HistorySidebarProps {
   workflowId: string;
   onClose?: () => void;
 }
 
-const STATUS_STYLES: Record<RunStatus, { bg: string; text: string; label: string }> = {
-  success: { bg: "#14532d", text: "#4ade80", label: "Success" },
-  failed: { bg: "#450a0a", text: "#f87171", label: "Failed" },
-  partial: { bg: "#422006", text: "#facc15", label: "Partial" },
-  running: { bg: "#2e1065", text: "#a78bfa", label: "Running" },
-};
-
-const SCOPE_LABELS: Record<RunScope, string> = {
-  full: "Full",
-  partial: "Partial",
-  single: "Single",
-};
-
-function getStatusStyle(status: string) {
-  return STATUS_STYLES[status as RunStatus] ?? STATUS_STYLES.failed;
+function formatDate(iso: string): string {
+  return formatDistanceToNow(new Date(iso), { addSuffix: true });
 }
 
-function formatDuration(ms: number): string {
-  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${ms}ms`;
+function runBadgeClass(status: string): string {
+  if (status === "success") return "bg-[#166534]/30 text-[#4ade80]";
+  if (status === "failed") return "bg-[#7f1d1d]/30 text-[#f87171]";
+  return "bg-[#713f12]/30 text-[#fbbf24]";
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const style = getStatusStyle(status);
+function runBadgeLabel(status: string): string {
+  if (status === "success") return "Success";
+  if (status === "failed") return "Failed";
+  return "Partial";
+}
+
+function nodeDotClass(status: string): string {
+  if (status === "success") return "bg-[#4ade80]";
+  if (status === "failed") return "bg-[#f87171]";
+  return "bg-[#fbbf24]";
+}
+
+function scopeLabel(scope: RunScope): string {
+  if (scope === "full") return "Full Workflow";
+  if (scope === "partial") return "Selected Nodes";
+  return "Single Node";
+}
+
+function NodeRow({ exec, name }: { exec: NodeExecutionRecord; name: string }) {
   return (
-    <span
-      className="text-[11px] font-medium px-1.5 py-0.5 rounded"
-      style={{ background: style.bg, color: style.text }}
-    >
-      {style.label}
-    </span>
-  );
-}
-
-function NodeEntry({ exec }: { exec: NodeExecutionRecord }) {
-  return (
-    <div className="ml-2 pl-2 border-l py-1.5" style={{ borderColor: "var(--toolbar-border)" }}>
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] truncate" style={{ color: "var(--text-primary)" }}>{exec.nodeType}</span>
-        <StatusBadge status={exec.status} />
+    <div className="px-3 py-2 border-t border-[#1a1a1a]">
+      <div className="flex items-center gap-2">
+        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${nodeDotClass(exec.status)}`} />
+        <span className="text-xs text-[#c5c5c5] flex-1 truncate">{name}</span>
+        <span className={`text-[10px] font-medium ${exec.status === "success" ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+          {exec.status === "success" ? "Success" : "Failed"}
+        </span>
+        <span className="text-[10px] text-[#525252]">{exec.duration}ms</span>
       </div>
-      <div className="flex items-center gap-2 mt-0.5">
-        <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{formatDuration(exec.duration)}</span>
-        {exec.error && (
-          <span className="text-[11px] text-red-400 truncate">{exec.error}</span>
-        )}
-      </div>
+      {exec.error && (
+        <p className="text-[10px] text-[#f87171] mt-1.5 pl-4 leading-relaxed break-words">
+          {exec.error}
+        </p>
+      )}
+      {exec.status === "success" && exec.outputs && Object.keys(exec.outputs).length > 0 && (
+        <p className="text-[10px] text-[#525252] mt-1 pl-4 truncate">
+          Output: {JSON.stringify(exec.outputs).slice(0, 60)}...
+        </p>
+      )}
     </div>
   );
 }
 
-function RunEntry({
+function RunCard({
   run,
-  index,
   expanded,
   onToggle,
 }: {
   run: WorkflowRunRecord;
-  index: number;
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const Chevron = expanded ? ChevronDown : ChevronRight;
-  const timestamp = formatDistanceToNow(new Date(run.createdAt), { addSuffix: true });
+  const nodeNameMap = useMemo(() => {
+    const snapshot = run.nodeSnapshot as Array<{ id: string; data?: { label?: string }; type?: string }> | null | undefined;
+    if (!snapshot) return {} as Record<string, string>;
+    return Object.fromEntries(snapshot.map((n) => [n.id, n.data?.label ?? n.type ?? n.id.slice(-6)]));
+  }, [run.nodeSnapshot]);
+
+  const succeeded = run.executions.filter((e) => e.status === "success").length;
 
   return (
-    <div className="w-full rounded-md overflow-hidden" style={{ background: "var(--input-bg)" }}>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full p-3 text-left hover:bg-[var(--toolbar-border)] transition-colors"
-      >
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <Chevron className="w-3 h-3 flex-none" style={{ color: "var(--text-muted)" }} />
-            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>#{index + 1}</span>
-          </div>
-          <StatusBadge status={run.status} />
+    <div className="border-b border-[#1a1a1a]">
+      <div className="px-3 py-2.5 cursor-pointer hover:bg-[#1a1a1a] transition-colors" onClick={onToggle}>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm font-medium text-[#e5e5e5]">
+            Run #{run.id.slice(-4)}
+          </span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${runBadgeClass(run.status)}`}>
+            {runBadgeLabel(run.status)}
+          </span>
         </div>
-        <div className="flex items-center justify-between pl-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{formatDuration(run.duration)}</span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{SCOPE_LABELS[run.scope]}</span>
-          </div>
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{timestamp}</span>
+        <div className="flex items-center gap-1.5 text-[10px] text-[#525252]">
+          <Clock size={10} />
+          <span>{formatDate(run.createdAt)}</span>
+          <span>·</span>
+          <span>{scopeLabel(run.scope)}</span>
+          <span>·</span>
+          <span>{run.duration > 0 ? `${(run.duration / 1000).toFixed(1)}s` : "0.0s"}</span>
         </div>
-      </button>
-
-      {expanded && run.executions.length > 0 && (
-        <div className="px-3 pb-3 flex flex-col gap-1">
-          {run.executions.map((exec) => (
-            <NodeEntry key={exec.id} exec={exec} />
-          ))}
-        </div>
-      )}
+        {run.executions.length > 0 && (
+          <p className={`text-[10px] mt-1 font-medium ${run.status === "success" ? "text-[#4ade80]" : "text-[#fbbf24]"}`}>
+            {succeeded} of {run.executions.length} nodes succeeded
+          </p>
+        )}
+      </div>
+      {expanded && run.executions.map((exec) => (
+        <NodeRow
+          key={exec.id}
+          exec={exec}
+          name={nodeNameMap[exec.nodeId] ?? exec.nodeType}
+        />
+      ))}
     </div>
   );
 }
@@ -136,11 +143,8 @@ export default function HistorySidebar({ workflowId, onClose }: HistorySidebarPr
   function toggleExpand(id: string) {
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
@@ -159,22 +163,20 @@ export default function HistorySidebar({ workflowId, onClose }: HistorySidebarPr
           </button>
         )}
       </div>
-
-      <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center justify-center p-8">
             <Loader2 className="w-4 h-4 animate-spin" style={{ color: "var(--text-muted)" }} />
           </div>
         ) : runs.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center justify-center p-8">
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>No runs yet</p>
           </div>
         ) : (
-          runs.map((run, i) => (
-            <RunEntry
+          runs.map((run) => (
+            <RunCard
               key={run.id}
               run={run}
-              index={runs.length - 1 - i}
               expanded={expandedIds.has(run.id)}
               onToggle={() => toggleExpand(run.id)}
             />

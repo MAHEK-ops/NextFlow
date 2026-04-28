@@ -16,7 +16,7 @@ function LLMNode({ id, data, selected }: NodeProps<LLMNodeData>) {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
 
   return (
-    <NodeWrapper nodeId={id} label={data.label} selected={selected} minWidth={280}>
+    <NodeWrapper nodeId={id} label={data.label} selected={selected} minWidth={280} error={data.error}>
       <div className="relative">
         <Handle type="target" position={Position.Left} id="system_prompt" data-handletype="text"
           style={{ ...HS, background: HC.text, borderColor: "var(--node-bg)", top: 18 }} />
@@ -53,9 +53,7 @@ function LLMNode({ id, data, selected }: NodeProps<LLMNodeData>) {
               <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>{data.result}</p>
             </div>
           )}
-          {!data.streaming && data.error !== null && (
-            <p className="text-xs text-red-400">{data.error}</p>
-          )}
+
         </div>
       </div>
 

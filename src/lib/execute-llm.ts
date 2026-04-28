@@ -11,10 +11,8 @@ export async function executeLlmNode(
       ? inputs["system_prompt"]
       : nodeData.systemPrompt;
 
-  const userMessage = inputs["user_message"];
-  if (typeof userMessage !== "string" || !userMessage.trim()) {
-    throw new Error("LLM node requires a non-empty user message");
-  }
+  const userMessage =
+    typeof inputs["user_message"] === "string" ? inputs["user_message"] : "";
 
   const imageInput = inputs["images"];
   const imageUrls: string[] = Array.isArray(imageInput)
@@ -22,6 +20,15 @@ export async function executeLlmNode(
     : typeof imageInput === "string"
     ? [imageInput]
     : [];
+
+  const hasContent =
+    userMessage.trim().length > 0 ||
+    (systemPrompt && systemPrompt.trim().length > 0) ||
+    imageUrls.length > 0;
+
+  if (!hasContent) {
+    throw new Error("LLM node requires at least one input: user message, system prompt, or an image");
+  }
 
   const result = await tasks.triggerAndWait<typeof llmTask>("llm-task", {
     model: nodeData.model,

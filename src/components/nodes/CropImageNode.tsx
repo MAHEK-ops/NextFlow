@@ -25,7 +25,7 @@ function CropImageNode({ id, data, selected }: NodeProps<CropImageNodeData>) {
     edges.some((e) => e.target === id && e.targetHandle === handleId);
 
   return (
-    <NodeWrapper nodeId={id} label={data.label} selected={selected}>
+    <NodeWrapper nodeId={id} label={data.label} selected={selected} error={data.error}>
       <div className="relative">
         {INPUTS.map(({ id: hid, color }, i) => (
           <Handle key={hid} type="target" position={Position.Left} id={hid} data-handletype={hid === "image_url" ? "image" : "text"}
@@ -65,7 +65,6 @@ function CropImageNode({ id, data, selected }: NodeProps<CropImageNodeData>) {
             <img src={data.outputUrl} alt="cropped output" className="w-full max-h-[100px] object-cover rounded-xl" />
           </div>
         )}
-        {data.error !== null && <p className="px-3 pb-3 text-xs text-red-400">{data.error}</p>}
       </div>
 
       <Handle type="source" position={Position.Right} id="output" data-handletype="image"

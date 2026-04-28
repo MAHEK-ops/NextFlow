@@ -113,6 +113,7 @@ export interface WorkflowRunRecord {
   duration: number;
   createdAt: string;
   executions: NodeExecutionRecord[];
+  nodeSnapshot?: unknown;
 }
 
 // Execution engine types

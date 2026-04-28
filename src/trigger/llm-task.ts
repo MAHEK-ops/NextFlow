@@ -17,7 +17,8 @@ export const llmTask = task({
         systemInstruction: payload.systemPrompt || undefined,
       });
 
-      const parts: Part[] = [{ text: payload.userMessage }];
+      const parts: Part[] = [];
+      if (payload.userMessage) parts.push({ text: payload.userMessage });
 
       for (const imageUrl of payload.imageUrls) {
         const imageResponse = await fetch(imageUrl);
@@ -25,6 +26,10 @@ export const llmTask = task({
         const base64 = Buffer.from(buffer).toString("base64");
         const mimeType = imageResponse.headers.get("content-type") ?? "image/jpeg";
         parts.push({ inlineData: { data: base64, mimeType } });
+      }
+
+      if (parts.length === 0 && payload.systemPrompt) {
+        parts.push({ text: payload.systemPrompt });
       }
 
       const result = await model.generateContent(parts);

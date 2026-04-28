@@ -13,9 +13,10 @@ interface Props {
   minWidth?: number;
   children: ReactNode;
   overlay?: ReactNode;
+  error?: string | null;
 }
 
-export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, children, overlay }: Props) {
+export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, children, overlay, error }: Props) {
   const setExecutingNodeIds = useWorkflowStore((s) => s.setExecutingNodeIds);
   const setRunStatus = useWorkflowStore((s) => s.setRunStatus);
 
@@ -68,6 +69,11 @@ export default function NodeWrapper({ nodeId, label, selected, minWidth = 240, c
           <Info size={13} className="text-[#3a3a3a]" />
         </div>
         {children}
+        {error && (
+          <div className="mx-3 mb-3 px-3 py-2 bg-[#7f1d1d]/20 border border-[#f87171]/30 rounded-xl">
+            <p className="text-xs text-[#f87171] leading-relaxed break-words">{error}</p>
+          </div>
+        )}
       </div>
     </div>
   );
