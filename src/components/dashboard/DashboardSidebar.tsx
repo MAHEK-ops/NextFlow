@@ -105,7 +105,7 @@ export default function DashboardSidebar() {
         <p className="text-xs font-medium px-4 mt-4 mb-2" style={{ color: "var(--text-faint)" }}>Sessions</p>
       </div>
 
-      <div className="border-t p-2" style={{ borderColor: "var(--toolbar-border)" }}>
+      <div className="border-t p-2 overflow-visible" style={{ borderColor: "var(--toolbar-border)" }}>
         <SidebarProfile />
       </div>
     </aside>

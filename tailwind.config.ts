@@ -65,6 +65,7 @@ const config: Config = {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "scale-in": "scale-in 0.15s ease-out",
         "fade-in": "fade-in 0.2s ease-out",
+        "profile-dropdown": "profile-dropdown 0.15s ease-out",
       },
       keyframes: {
         "pulse-glow": {
@@ -78,6 +79,10 @@ const config: Config = {
         "fade-in": {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
+        },
+        "profile-dropdown": {
+          "0%": { transform: "scale(0.95) translateY(4px)", opacity: "0", transformOrigin: "bottom left" },
+          "100%": { transform: "scale(1) translateY(0)", opacity: "1", transformOrigin: "bottom left" },
         },
       },
     },
