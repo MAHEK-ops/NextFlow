@@ -184,7 +184,9 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
         />
 
         <div className="flex-1 flex overflow-hidden">
-          {showSidebar && <NodeSidebar />}
+          {showSidebar && (
+            <NodeSidebar onOpenAssets={() => setShowAssetsPanel(true)} />
+          )}
           <div className="relative flex-1 overflow-hidden">
             <WorkflowCanvas />
             {showAssetsPanel && (
