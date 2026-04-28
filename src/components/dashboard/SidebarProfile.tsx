@@ -16,7 +16,7 @@ export default function SidebarProfile() {
 
   return (
     <div className="flex items-center gap-2.5 px-3 py-2.5 mx-1 rounded-xl hover:bg-[var(--input-bg)] transition-colors cursor-pointer">
-      <div className="w-9 h-9 rounded-xl bg-[#1c1c1e] border border-[#272727] flex items-center justify-center text-sm text-white font-medium flex-shrink-0">
+      <div className="w-8 h-8 rounded-full bg-[#1c1c1e] border border-[#272727] flex items-center justify-center text-sm text-white font-medium flex-shrink-0">
         {initial}
       </div>
       <div className="flex flex-col min-w-0">

@@ -97,6 +97,7 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
     function openContextMenu(e: React.MouseEvent, workflow: Workflow) {
         e.preventDefault();
         e.stopPropagation();
+        e.nativeEvent.stopImmediatePropagation();
         setContextMenu({
             workflowId: workflow.id,
             workflowName: workflow.name,
@@ -176,51 +177,27 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
     return (
         <div className="flex flex-col h-full bg-[#141414] text-white">
             {/* Hero banner */}
-            <div className="flex items-center justify-between px-6 border-b border-[#1f1f1f] bg-[#141414] flex-none">
-                {/* Hero banner */}
-                <div className="relative w-full h-[400px] overflow-hidden flex-none">
-                    <img
-                        src="/hero-bg.jpeg"
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover object-center"
-                    />
-                    <div className="absolute inset-0 bg-black/30" />
-                    <div className="relative z-10 h-full flex flex-col justify-end px-10 pb-10">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="w-9 h-9 rounded-xl bg-[#2563eb] flex items-center justify-center flex-none">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                    <circle cx="5" cy="12" r="2.5" fill="white" />
-                                    <circle cx="19" cy="5" r="2.5" fill="white" />
-                                    <circle cx="19" cy="19" r="2.5" fill="white" />
-                                    <line x1="7.5" y1="11" x2="16.5" y2="6" stroke="white" strokeWidth="1.5" />
-                                    <line x1="7.5" y1="13" x2="16.5" y2="18" stroke="white" strokeWidth="1.5" />
-                                </svg>
-                            </div>
-                            <h1 className="text-[2.2rem] font-bold text-white tracking-tight">Node Editor</h1>
+            <div className="relative w-full h-[380px] overflow-hidden flex-none">
+                <img
+                    src="/hero-bg.jpeg"
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-black/30" />
+                <div className="relative z-10 h-full flex flex-col justify-end px-10 pb-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-9 h-9 rounded-xl bg-[#2563eb] flex items-center justify-center flex-none">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <circle cx="5" cy="12" r="2.5" fill="white" />
+                                <circle cx="19" cy="5" r="2.5" fill="white" />
+                                <circle cx="19" cy="19" r="2.5" fill="white" />
+                                <line x1="7.5" y1="11" x2="16.5" y2="6" stroke="white" strokeWidth="1.5" />
+                                <line x1="7.5" y1="13" x2="16.5" y2="18" stroke="white" strokeWidth="1.5" />
+                            </svg>
                         </div>
-                        <p className="text-sm text-[#c8c8c8] max-w-sm mb-5 leading-relaxed">
-                            Build and run AI pipelines visually. Connect nodes to create powerful workflows.
-                        </p>
-                        <button
-                            type="button"
-                            onClick={handleCreateNew}
-                            disabled={creatingNew}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-medium rounded-full hover:bg-[#e5e5e5] disabled:opacity-60 transition-colors w-fit"
-                        >
-                            {creatingNew ? <Loader2 size={14} className="animate-spin" /> : null}
-                            New Workflow
-                            {!creatingNew && <span className="ml-1">→</span>}
-                        </button>
+                        <h1 className="text-[2.2rem] font-bold text-white tracking-tight">Node Editor</h1>
                     </div>
-                </div>
-                <div className="relative z-10 h-full flex flex-col justify-center px-10">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#7c3aed] flex items-center justify-center">
-                            <Plus size={20} className="text-white" />
-                        </div>
-                        <h1 className="text-2xl font-bold text-white">Node Editor</h1>
-                    </div>
-                    <p className="text-sm text-[#a3a3a3] max-w-md mb-5">
+                    <p className="text-sm text-[#c8c8c8] max-w-sm mb-5 leading-relaxed">
                         Build and run AI pipelines visually. Connect nodes to create powerful workflows.
                     </p>
                     <button
@@ -239,7 +216,7 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
             {/* Tabs + search bar */}
             <div className="flex items-center justify-between px-6 border-b border-[#1a1a1a] flex-none">
                 <div className="flex items-center gap-1">
-                    {["Projects", "Examples", "Templates"].map((tab) => (
+                    {["Projects", "Apps", "Examples", "Templates"].map((tab) => (
                         <button
                             key={tab}
                             type="button"
@@ -326,13 +303,6 @@ export default function DashboardClient({ workflows: initial }: { workflows: Wor
                                     onClick={() => router.push(`/workflow/${w.id}`)}
                                     onContextMenu={(e) => openContextMenu(e, w)}
                                 >
-                                    {/* Thumbnail placeholder — purple gradient */}
-                                    <div
-                                        className="absolute inset-0 opacity-30"
-                                        style={{
-                                            backgroundImage: "radial-gradient(ellipse at 50% 50%, #7c3aed 0%, transparent 70%)",
-                                        }}
-                                    />
                                     {/* Three dot menu */}
                                     <button
                                         type="button"
