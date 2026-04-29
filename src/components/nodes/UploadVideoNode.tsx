@@ -56,7 +56,8 @@ function UploadVideoNode({ id, data, selected }: NodeProps<UploadVideoNodeData>)
             <video
               src={data.videoUrl}
               controls
-              className="w-full max-h-[120px] rounded-xl object-cover"
+              className="w-full rounded-xl"
+              style={{ height: "120px", objectFit: "cover" }}
             />
             <p className="mt-1.5 text-xs truncate" style={{ color: "var(--text-muted)" }}>
               {data.fileName}
