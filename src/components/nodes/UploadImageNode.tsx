@@ -115,15 +115,14 @@ function UploadImageNode({ id, data, selected }: NodeProps<UploadImageNodeData>)
 
   return (
     <NodeWrapper nodeId={id} label={data.label} selected={selected} overlay={overlay}>
-      <div className="px-3 py-2.5">
+      <div className="px-3 py-2.5" style={{ minWidth: 0, maxWidth: "100%" }}>
         {data.imageUrl ? (
           <div>
-            <div className="rounded-xl overflow-hidden">
+            <div className="rounded-xl overflow-hidden" style={{ width: "100%", height: "160px" }}>
               <img
                 src={data.imageUrl}
                 alt={data.fileName ?? "uploaded image"}
-                className="w-full object-cover rounded-xl"
-                style={{ height: "160px", objectFit: "cover" }}
+                style={{ width: "100%", height: "160px", objectFit: "cover", display: "block" }}
               />
             </div>
             <p className="mt-1.5 text-xs truncate" style={{ color: "var(--text-muted)" }}>
