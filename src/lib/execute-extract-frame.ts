@@ -1,8 +1,38 @@
 import ffmpeg from "fluent-ffmpeg";
+import { execSync } from "child_process";
 import fs from "fs";
 import os from "os";
 import path from "path";
 import type { ExtractFrameNodeData } from "@/types/workflow";
+
+function getFfmpegPath(): string | null {
+  if (process.env.FFMPEG_PATH) return process.env.FFMPEG_PATH;
+  for (const p of ["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"]) {
+    if (fs.existsSync(p)) return p;
+  }
+  try {
+    return execSync("which ffmpeg").toString().trim();
+  } catch {
+    return null;
+  }
+}
+
+function getFfprobePath(): string | null {
+  if (process.env.FFPROBE_PATH) return process.env.FFPROBE_PATH;
+  for (const p of ["/opt/homebrew/bin/ffprobe", "/usr/local/bin/ffprobe", "/usr/bin/ffprobe"]) {
+    if (fs.existsSync(p)) return p;
+  }
+  try {
+    return execSync("which ffprobe").toString().trim();
+  } catch {
+    return null;
+  }
+}
+
+const ffmpegPath = getFfmpegPath();
+const ffprobePath = getFfprobePath();
+if (ffmpegPath) ffmpeg.setFfmpegPath(ffmpegPath);
+if (ffprobePath) ffmpeg.setFfprobePath(ffprobePath);
 
 async function fetchVideoBuffer(url: string): Promise<Buffer> {
   if (url.startsWith("data:")) {
