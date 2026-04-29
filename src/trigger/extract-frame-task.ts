@@ -1,3 +1,11 @@
+import ffmpegLib from "fluent-ffmpeg";
+
+if (process.env.FFMPEG_PATH) {
+  ffmpegLib.setFfmpegPath(process.env.FFMPEG_PATH);
+}
+if (process.env.FFPROBE_PATH) {
+  ffmpegLib.setFfprobePath(process.env.FFPROBE_PATH);
+}
 import { task } from "@trigger.dev/sdk/v3";
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
