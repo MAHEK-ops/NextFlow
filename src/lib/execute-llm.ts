@@ -1,9 +1,10 @@
 import type { LLMNodeData } from "@/types/workflow";
 
 const MODEL_ALIASES: Record<string, string> = {
-  "gemini-1.5-flash-latest": "gemini-1.5-flash",
-  "gemini-1.5-pro-latest": "gemini-1.5-pro",
-  "gemini-2.0-flash-exp": "gemini-2.0-flash",
+  "gemini-1.5-flash": "gemini-2.0-flash",
+  "gemini-1.5-pro": "gemini-2.5-pro",
+  "gemini-1.5-flash-latest": "gemini-2.5-flash",
+  "gemini-1.5-pro-latest": "gemini-2.5-pro",
 };
 
 function sanitizeModel(model: string): string {
@@ -20,12 +21,18 @@ type GeminiResponse = {
   }>;
 };
 
+type GroqMessage = { role: "system" | "user"; content: string };
+
+type GroqResponse = {
+  choices?: Array<{ message?: { content?: string } }>;
+};
+
 async function callGemini(
   modelName: string,
   body: Record<string, unknown>,
   apiKey: string
 ): Promise<Response> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
   return fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -33,12 +40,45 @@ async function callGemini(
   });
 }
 
+const GROQ_MODEL = process.env.GROQ_MODEL ?? "llama-3.1-8b-instant";
+
+async function callGroq(
+  systemPrompt: string,
+  userMessage: string,
+  apiKey: string
+): Promise<string> {
+  const messages: GroqMessage[] = [];
+  if (systemPrompt.trim()) {
+    messages.push({ role: "system", content: systemPrompt.trim() });
+  }
+  messages.push({ role: "user", content: userMessage.trim() || systemPrompt.trim() });
+
+  console.log("[llm] provider: groq", GROQ_MODEL);
+
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ model: GROQ_MODEL, messages }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Groq API error ${res.status}: ${err}`);
+  }
+
+  const data = (await res.json()) as GroqResponse;
+  return data.choices?.[0]?.message?.content ?? "";
+}
+
 export async function executeLlmNode(
   nodeData: LLMNodeData,
   inputs: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!geminiApiKey) throw new Error("GEMINI_API_KEY is not set");
 
   const systemPromptInput = inputs["system_prompt"] ?? inputs["systemPrompt"];
   const systemPrompt =
@@ -63,7 +103,6 @@ export async function executeLlmNode(
   }
 
   const primaryModel = sanitizeModel(nodeData.model || "gemini-2.0-flash");
-  const fallbackModel = primaryModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : "gemini-1.5-flash";
 
   const parts: Part[] = [];
 
@@ -92,19 +131,35 @@ export async function executeLlmNode(
     }
   }
 
-  const body: Record<string, unknown> = {
+  const geminiBody: Record<string, unknown> = {
     contents: [{ role: "user", parts }],
   };
 
-  let res = await callGemini(primaryModel, body, apiKey);
+  console.log("[llm] provider: gemini", primaryModel);
 
-  if (res.status === 429) {
-    res = await callGemini(fallbackModel, body, apiKey);
-  }
+  const res = await callGemini(primaryModel, geminiBody, geminiApiKey);
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gemini API error ${res.status}: ${err}`);
+    const shouldFallback =
+      res.status === 429 ||
+      res.status === 404 ||
+      res.status >= 500;
+
+    const geminiError = await res.text();
+
+    const groqApiKey = process.env.GROQ_API_KEY;
+    if (shouldFallback && groqApiKey) {
+      console.warn("[llm] Gemini failed, switching to Groq", res.status);
+      try {
+        const text = await callGroq(systemPrompt ?? "", userMessage, groqApiKey);
+        return { output: text };
+      } catch (groqErr) {
+        const groqError = groqErr instanceof Error ? groqErr.message : String(groqErr);
+        throw new Error(`Gemini failed: ${geminiError}\nGroq failed: ${groqError}`);
+      }
+    }
+
+    throw new Error(`Gemini API error ${res.status}: ${geminiError}`);
   }
 
   const responseData = (await res.json()) as GeminiResponse;

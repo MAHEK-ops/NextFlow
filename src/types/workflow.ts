@@ -183,8 +183,7 @@ export const NODE_OUTPUT_HANDLE_TYPE: Partial<Record<NodeType, HandleType>> = {
 
 export const GEMINI_MODELS = [
   { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
-  { id: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
-  { id: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+  { id: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite" },
 ] as const;
 
 export type GeminiModelId = (typeof GEMINI_MODELS)[number]["id"];
