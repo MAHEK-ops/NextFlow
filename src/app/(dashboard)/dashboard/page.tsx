@@ -14,13 +14,14 @@ export default async function DashboardPage() {
   const workflows = await db.workflow.findMany({
     where: { userId },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, name: true, updatedAt: true },
+    select: { id: true, name: true, updatedAt: true, previewSvg: true },
   });
 
   const serialized = workflows.map((w) => ({
     id: w.id,
     name: w.name,
     updatedAt: w.updatedAt.toISOString(),
+    previewSvg: w.previewSvg ?? null,
   }));
 
   return <DashboardClient workflows={serialized} isSignedIn={true} />;

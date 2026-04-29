@@ -6,6 +6,7 @@ import { ReactFlowProvider } from "reactflow";
 import { useWorkflowStore } from "@/store/workflow";
 import type { WorkflowNode, WorkflowEdge } from "@/types/workflow";
 import { exportWorkflowAsJson, parseWorkflowJson } from "@/lib/workflow-io";
+import { generateWorkflowPreview } from "@/lib/generateWorkflowPreview";
 import { useWorkflowRun } from "@/hooks/useWorkflowRun";
 import TitlePill from "./TitlePill";
 import TopBarActions from "./TopBarActions";
@@ -73,10 +74,11 @@ export default function WorkflowShell({ workflowId, initialName }: WorkflowShell
     const { nodes: n, edges: e, workflowName: name } = useWorkflowStore.getState();
     setSaveState("saving");
     try {
+      const previewSvg = generateWorkflowPreview(n, e);
       await fetch(`/api/workflows/${workflowId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, nodes: n, edges: e }),
+        body: JSON.stringify({ name, nodes: n, edges: e, previewSvg }),
       });
       setSaveState("saved");
       if (savedFeedbackTimeoutRef.current) clearTimeout(savedFeedbackTimeoutRef.current);

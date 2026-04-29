@@ -52,7 +52,7 @@ function UploadVideoNode({ id, data, selected }: NodeProps<UploadVideoNodeData>)
     <NodeWrapper nodeId={id} label={data.label} selected={selected}>
       <div className="px-3 py-2.5" style={{ minWidth: 0, maxWidth: "100%" }}>
         {data.videoUrl ? (
-          <div className="w-full h-[160px] rounded-xl overflow-hidden bg-black/40 flex items-center justify-center">
+          <div className="w-full max-w-[220px] h-[160px] mx-auto rounded-xl overflow-hidden bg-black/40 flex items-center justify-center">
             <video
               src={data.videoUrl}
               controls

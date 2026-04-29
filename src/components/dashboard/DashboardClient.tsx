@@ -7,26 +7,12 @@ import { formatDistanceToNow } from "date-fns";
 import { Plus, MoreHorizontal, ExternalLink, Pencil, Copy, Trash2, X, Loader2 } from "lucide-react";
 import { SAMPLE_WORKFLOW_NAME, SAMPLE_NODES, SAMPLE_EDGES } from "@/lib/sample-workflow";
 import { useUIStore } from "@/store/ui";
-import CanvasPreview from "@/components/CanvasPreview";
-
-interface Node {
-    id: string;
-    position: { x: number; y: number };
-    width?: number;
-    height?: number;
-}
-
-interface Edge {
-    source: string;
-    target: string;
-}
 
 interface Workflow {
     id: string;
     name: string;
     updatedAt: string;
-    nodes?: Node[];
-    edges?: Edge[];
+    previewSvg: string | null;
 }
 
 interface ContextMenu {
@@ -182,7 +168,7 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                 body: JSON.stringify({ nodes: data.nodes, edges: data.edges }),
             });
             setWorkflows((prev) => [
-                { id, name: `${original.name} (copy)`, updatedAt: new Date().toISOString() },
+                { id, name: `${original.name} (copy)`, updatedAt: new Date().toISOString(), previewSvg: null },
                 ...prev,
             ]);
         } catch {
@@ -385,21 +371,27 @@ export default function DashboardClient({ workflows: initial, isSignedIn }: { wo
                                     onContextMenu={(e) => openContextMenu(e, w)}
                                 >
 
-                                    {/* Canvas preview placeholder */}
-                                    <div
-                                        className="w-full h-full flex items-center justify-center"
-                                        style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)" }}
-                                    >
-                                        <div className="relative w-32 h-20 opacity-50">
-                                            <div className="absolute top-2 left-2 w-8 h-8 rounded-lg bg-[#3b82f6]" />
-                                            <div className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-[#7c3aed]" />
-                                            <div className="absolute bottom-2 left-8 w-8 h-8 rounded-lg bg-[#10b981]" />
-                                            <svg className="absolute inset-0 w-full h-full">
-                                                <line x1="18" y1="18" x2="50" y2="44" stroke="#4a4a4a" strokeWidth="1.5" />
-                                                <line x1="110" y1="18" x2="78" y2="44" stroke="#4a4a4a" strokeWidth="1.5" />
+                                    {w.previewSvg ? (
+                                        <img
+                                            src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(w.previewSvg)}`}
+                                            alt="Workflow preview"
+                                            className="w-full h-full object-contain"
+                                            style={{ background: "#111111" }}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="w-full h-full flex items-center justify-center"
+                                            style={{ background: "#111111" }}
+                                        >
+                                            <svg width="80" height="50" viewBox="0 0 80 50">
+                                                <rect x="2" y="10" width="28" height="18" rx="4" fill="#1f1f1f" stroke="#3b82f6" strokeWidth="1.5" />
+                                                <rect x="50" y="2" width="28" height="18" rx="4" fill="#1f1f1f" stroke="#7c3aed" strokeWidth="1.5" />
+                                                <rect x="50" y="30" width="28" height="18" rx="4" fill="#1f1f1f" stroke="#10b981" strokeWidth="1.5" />
+                                                <path d="M30,19 C40,19 40,11 50,11" stroke="#7c3aed" strokeWidth="1.5" fill="none" opacity="0.6" />
+                                                <path d="M30,19 C40,19 40,39 50,39" stroke="#10b981" strokeWidth="1.5" fill="none" opacity="0.6" />
                                             </svg>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Three dot menu */}
                                     <button

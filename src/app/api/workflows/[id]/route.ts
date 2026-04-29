@@ -9,6 +9,7 @@ const UpdateWorkflowSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   nodes: z.array(z.unknown()).optional(),
   edges: z.array(z.unknown()).optional(),
+  previewSvg: z.string().optional(),
 });
 
 export async function GET(
@@ -76,7 +77,7 @@ export async function PATCH(
     );
   }
 
-  const { name, nodes, edges } = parsed.data;
+  const { name, nodes, edges, previewSvg } = parsed.data;
 
   const updated = await db.workflow.update({
     where: { id: params.id },
@@ -84,6 +85,7 @@ export async function PATCH(
       ...(name !== undefined && { name }),
       ...(nodes !== undefined && { nodes: nodes as Prisma.InputJsonValue }),
       ...(edges !== undefined && { edges: edges as Prisma.InputJsonValue }),
+      ...(previewSvg !== undefined && { previewSvg }),
     },
     select: { id: true, name: true, updatedAt: true },
   });
