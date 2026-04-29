@@ -55,7 +55,7 @@ export default function SidebarProfile({ collapsed }: Props) {
 
   async function handleSignOut() {
     await signOut();
-    window.location.href = "/sign-in";
+    window.location.href = "/dashboard";
   }
 
   return (

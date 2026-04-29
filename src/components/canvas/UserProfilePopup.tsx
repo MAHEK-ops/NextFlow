@@ -90,7 +90,7 @@ export default function UserProfilePopup({ onClose, userInitial }: Props) {
 
         <button
           type="button"
-          onClick={() => void signOut()}
+          onClick={() => void signOut({ redirectUrl: "/dashboard" })}
           className="w-full flex items-center gap-2 px-2 py-2 rounded-xl hover:bg-[#1a1a1a] cursor-pointer transition-colors"
         >
           <LogOut size={15} className="text-[#525252]" />
