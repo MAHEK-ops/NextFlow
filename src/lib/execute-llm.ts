@@ -91,8 +91,9 @@ export async function executeLlmNode(
   const imageUrls: string[] = Array.isArray(imageInput)
     ? imageInput.filter((u): u is string => typeof u === "string")
     : typeof imageInput === "string"
-    ? [imageInput]
-    : [];
+      ? [imageInput]
+      : [];
+  console.log("[llm] imageUrls received:", imageUrls.length, imageUrls.map(u => u.slice(0, 30)));
 
   const hasUserMessage = userMessage.trim().length > 0;
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim().length > 0);

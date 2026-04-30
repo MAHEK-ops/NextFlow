@@ -19,7 +19,21 @@ export function useWorkflowRun(workflowId: string) {
       if (!res.ok) return;
       const data = (await res.json()) as { runs: WorkflowRunRecord[] };
       const run = data.runs.find((r) => r.id === runId);
+
+      console.log("[applyNodeOutputs] runId:", runId);
+      console.log("[applyNodeOutputs] runs count:", data.runs.length);
+      console.log("[applyNodeOutputs] found run:", !!run);
+
       if (!run) return;
+
+      console.log("[applyNodeOutputs] executions:", run.executions.map(e => ({
+        nodeId: e.nodeId,
+        type: e.nodeType,
+        status: e.status,
+        outputKeys: Object.keys(e.outputs),
+        output: (e.outputs as Record<string, unknown>)?.output,
+      })));
+
       for (const exec of run.executions) {
         if (exec.status !== "success") continue;
         const output = (exec.outputs as Record<string, unknown>)?.output;
@@ -85,6 +99,7 @@ export function useWorkflowRun(workflowId: string) {
       setExecutingNodeIds(new Set());
     }
   }, [running, nodes, edges, workflowId, setRunStatus, setExecutingNodeIds, applyNodeOutputs]);
+
 
   return { running, handleRun };
 }

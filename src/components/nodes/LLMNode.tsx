@@ -50,8 +50,8 @@ function LLMNode({ id, data, selected }: NodeProps<LLMNodeData>) {
             </div>
           )}
           {!data.streaming && data.result !== null && (
-            <div className="rounded-xl p-2 max-h-[150px] overflow-y-auto" style={{ background: "var(--input-bg)" }}>
-              <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>{data.result}</p>
+            <div className="rounded-xl p-2 overflow-y-auto" style={{ background: "var(--input-bg)", maxHeight: "200px", width: "280px" }}>
+              <p className="text-xs whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>{data.result}</p>
             </div>
           )}
 

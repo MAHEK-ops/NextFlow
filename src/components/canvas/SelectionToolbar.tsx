@@ -4,7 +4,7 @@ import { Play, Braces, LayoutGrid } from "lucide-react";
 import { useReactFlow } from "reactflow";
 import { useWorkflowStore } from "@/store/workflow";
 import { toast } from "sonner";
-import type { RunStatus } from "@/types/workflow";
+import type { RunStatus, WorkflowRunRecord } from "@/types/workflow";
 
 interface SelectionToolbarProps {
   workflowId: string;
@@ -16,6 +16,7 @@ export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) 
   const groupSelectedNodes = useWorkflowStore((s) => s.groupSelectedNodes);
   const setRunStatus = useWorkflowStore((s) => s.setRunStatus);
   const setExecutingNodeIds = useWorkflowStore((s) => s.setExecutingNodeIds);
+  const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
   const { flowToScreenPosition } = useReactFlow();
 
   const selected = nodes.filter((n) => n.selected);
@@ -27,6 +28,34 @@ export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) 
   const centerX = (minX + maxX) / 2;
 
   const screenPos = flowToScreenPosition({ x: centerX, y: minY });
+
+  async function applyNodeOutputs(runId: string) {
+    try {
+      const res = await fetch(`/api/workflows/${workflowId}/runs`);
+      if (!res.ok) return;
+      const data = (await res.json()) as { runs: WorkflowRunRecord[] };
+      const run = data.runs.find((r) => r.id === runId);
+      if (!run) return;
+      for (const exec of run.executions) {
+        if (exec.status !== "success") continue;
+        const output = (exec.outputs as Record<string, unknown>)?.output;
+        if (typeof output !== "string") continue;
+        const node = useWorkflowStore.getState().nodes.find((n) => n.id === exec.nodeId);
+        if (!node) continue;
+        if (node.data.type === "llm") {
+          updateNodeData(exec.nodeId, { result: output, streaming: false, error: null });
+        }
+        if (node.data.type === "crop-image") {
+          updateNodeData(exec.nodeId, { outputUrl: output, error: null });
+        }
+        if (node.data.type === "extract-frame") {
+          updateNodeData(exec.nodeId, { outputUrl: output, error: null });
+        }
+      }
+    } catch {
+      // silently ignore
+    }
+  }
 
   async function handleRunSelected() {
     const selectedIds = selected.map((n) => n.id);
@@ -45,6 +74,7 @@ export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) 
         }),
       });
       const data = (await res.json()) as {
+        runId?: string;
         status?: string;
         error?: string;
       };
@@ -54,6 +84,9 @@ export default function SelectionToolbar({ workflowId }: SelectionToolbarProps) 
       } else {
         toast.success("Selected nodes completed");
         setRunStatus((data.status as RunStatus) ?? "success");
+        if (data.runId) {
+          await applyNodeOutputs(data.runId);
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Network error";
