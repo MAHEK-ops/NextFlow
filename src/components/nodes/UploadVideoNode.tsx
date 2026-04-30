@@ -52,12 +52,14 @@ function UploadVideoNode({ id, data, selected }: NodeProps<UploadVideoNodeData>)
     <NodeWrapper nodeId={id} label={data.label} selected={selected}>
       <div className="px-3 py-2.5" style={{ minWidth: 0, maxWidth: "100%" }}>
         {data.videoUrl ? (
-          <div className="w-full max-w-[220px] h-[160px] mx-auto rounded-xl overflow-hidden bg-black/40 flex items-center justify-center">
-            <video
-              src={data.videoUrl}
-              controls
-              className="max-w-full max-h-full object-contain rounded-xl"
-            />
+          <div>
+            <div style={{ width: "100%", height: "140px", overflow: "hidden", borderRadius: "12px", background: "black" }}>
+              <video
+                src={data.videoUrl}
+                controls
+                style={{ width: "100%", height: "140px", objectFit: "contain", display: "block" }}
+              />
+            </div>
             <p className="mt-1.5 text-xs truncate" style={{ color: "var(--text-muted)" }}>
               {data.fileName}
             </p>

@@ -39,6 +39,17 @@ function scopeLabel(scope: RunScope): string {
 }
 
 function NodeRow({ exec, name }: { exec: NodeExecutionRecord; name: string }) {
+  const raw = (exec.outputs as Record<string, unknown>)?.output;
+  const outputStr = typeof raw === "string" ? raw : null;
+  const isImage = outputStr !== null && outputStr.startsWith("data:image");
+  const isText = outputStr !== null && !isImage && outputStr.length > 0;
+
+  function copyOutput() {
+    if (outputStr) {
+      void navigator.clipboard.writeText(outputStr);
+    }
+  }
+
   return (
     <div className="relative mb-3 last:mb-0">
       <div className={`absolute -left-[14px] top-1 w-2.5 h-2.5 rounded-full border-2 border-[#111111] ${nodeDotClass(exec.status)}`} />
@@ -50,6 +61,16 @@ function NodeRow({ exec, name }: { exec: NodeExecutionRecord; name: string }) {
               {exec.status === "success" ? "Success" : "Failed"}
             </span>
             <span className="text-[10px] text-[#525252]">{exec.duration}ms</span>
+            {outputStr && (
+              <button
+                type="button"
+                onClick={copyOutput}
+                className="text-[10px] text-[#525252] hover:text-white transition-colors px-1 py-0.5 rounded bg-[#1f1f1f] hover:bg-[#2a2a2a]"
+                title="Copy output"
+              >
+                Copy
+              </button>
+            )}
           </div>
         </div>
         {exec.error && (
@@ -57,9 +78,17 @@ function NodeRow({ exec, name }: { exec: NodeExecutionRecord; name: string }) {
             {exec.error}
           </p>
         )}
-        {exec.status === "success" && exec.outputs && Object.keys(exec.outputs).length > 0 && (
-          <p className="text-[10px] text-[#525252] mt-0.5 truncate">
-            {JSON.stringify(exec.outputs).slice(0, 50)}
+        {isImage && outputStr && (
+          <img
+            src={outputStr}
+            alt="output"
+            className="mt-1.5 w-full rounded-lg object-cover"
+            style={{ maxHeight: "80px" }}
+          />
+        )}
+        {isText && outputStr && (
+          <p className="text-[10px] text-[#525252] mt-0.5 line-clamp-2 break-words">
+            {outputStr.slice(0, 120)}{outputStr.length > 120 ? "..." : ""}
           </p>
         )}
       </div>
